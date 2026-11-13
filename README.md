@@ -6,6 +6,8 @@ A comprehensive, hands-on Python course in modelling uncertainty and making defe
 
 Every investigation has a prediction, editable Python, actual browser execution, an executed worked example, one change to try, a transfer question, two progressive hints, explanatory feedback and a stated limitation. Inputs identify invented or simulated provenance. A fixed seed is reproducibility, not validation.
 
+Each of the 79 lessons and workbooks includes a captioned visual explanation. Formulas are typeset and Python snippets remain literal code. The first simulation plots its actual attendance draws; executed figures have phone and desktop versions with full-size links. Reference illustrations stay separate from your run.
+
 ## Learning route
 
 ### 1. Your first simulation
@@ -169,6 +171,9 @@ Open `http://localhost:5173/monte-carlo-lab/`. The Pages-shaped local path check
 - `src/course.json`: authored lessons, learning prompts and references.
 - `python/`: standalone, independently executable examples.
 - `scripts/execute.py`: generates worked output and SVG figures from exact published code.
+- `scripts/visuals.py`: lesson-specific mathematical/reference illustrations with explicit targets and provenance.
+- `scripts/figure_style.py`: responsive captures of the same executed plot data; logarithmic axes and original values are retained.
+- `src/rich-text.mjs`: escaped formatting for `$LaTeX$` maths and backtick Python syntax.
 - `scripts/layout.mjs`, `src/style.css`: readable interface, responsive routes and light/dark themes.
 - `src/app.js`, `src/worker.js`: local drafts, editor, live Python, CSV and portable records.
 - `tests/`: native statistical/reference checks, relative links and real browser/Wasm workflows.

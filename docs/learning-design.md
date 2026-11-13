@@ -23,3 +23,23 @@ Results appear after execution, with clear provenance and recoverable error/Stop
 states. Course modules are native disclosures; search opens matching modules and
 module deep links reveal their contents. Mathematical refreshers remain optional,
 readable disclosures where the course provides them.
+
+## Visual reasoning and notation revision
+
+Add one specific reference illustration to each core, advanced and application
+lesson. Explain trial boundaries, distributions, numerical error, model inputs,
+dependence, path state, variance reduction, decisions, weighted estimators and
+MCMC with the representation that fits the idea. Label reference assumptions,
+simulations, units and targets. References are separate from the learner's run;
+more precise simulation never validates the assumed real-world model.
+
+Typeset mathematical expressions; preserve literal Python as code. Retain a
+single goal, prediction, executable source, deliberate change and transfer task.
+Show the opening attendance distribution from the actual executed source, with
+an explicit strict overflow boundary. Provide phone/desktop versions of the same
+executed plots without redrawing random inputs or changing simulated outcomes.
+Group code, actual results and the worked reference; preserve drafts, CSVs,
+reports, provenance, cancellation and the existing accessible recovery paths.
+Review reference label bounds and equation fit on small screens, plus actual
+plots in light/dark reading layouts. Author/browser checks do not demonstrate
+learning effectiveness.

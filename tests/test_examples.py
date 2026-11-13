@@ -1,6 +1,6 @@
 # Copyright © 2026 Christopher Snow
 """Execute every source; check estimator references, conservation and CSV failure paths."""
-import contextlib, io, json, os, tempfile, unittest, warnings
+import contextlib, io, json, os, sys, tempfile, unittest, warnings
 from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'scripts'))
 COURSE=json.loads((ROOT/'src/course.json').read_text())
 LESSONS=COURSE['lessons'];ALL=LESSONS+COURSE['applications']
 
@@ -30,6 +31,26 @@ class CourseTests(unittest.TestCase):
             cls.runs[lesson['slug']]=run(lesson)
         print(f'Executed {len(cls.runs)} complete published sources.',flush=True)
     def ns(self,index):return self.runs[LESSONS[index-1]['slug']][0]
+    def test_phone_capture_preserves_data_and_log_scale(self):
+        from figure_style import capture_figures
+        from matplotlib.ticker import LogLocator
+        plt.close('all')
+        figure,ax=plt.subplots();line,=ax.plot([1,10,100],[2,3,1]);ax.set_xscale('log')
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore',DeprecationWarning)
+            wide,narrow=capture_figures()
+        self.assertEqual((len(wide),len(narrow)),(1,1))
+        np.testing.assert_array_equal(line.get_xdata(),[1,10,100])
+        np.testing.assert_array_equal(line.get_ydata(),[2,3,1])
+        self.assertEqual(ax.get_xscale(),'log')
+        self.assertIsInstance(ax.xaxis.get_major_locator(),LogLocator)
+        plt.close('all')
+    def test_joint_model_matches_reference_tail_probabilities(self):
+        ns=self.ns(25)
+        for name,exact in [('independent_total',.125),('shared_total',.25)]:
+            values=ns[name];estimate=np.mean(values>70)
+            se=np.sqrt(exact*(1-exact)/len(values))
+            self.assertLess(abs(estimate-exact),6*se)
     def test_every_example_produces_output_without_warnings(self):
         for lesson in ALL:
             with self.subTest(lesson=lesson['slug']):

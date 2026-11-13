@@ -7,8 +7,11 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy, scipy, pandas
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'scripts'))
+from visuals import illustration
+from figure_style import capture_figures
 plt.rcParams.update({'font.family':'DejaVu Sans','font.size':13,'axes.spines.top':False,
-    'axes.spines.right':False,'figure.figsize':(7,3.4),'figure.facecolor':'#ffffff',
+    'axes.spines.right':False,'figure.figsize':(6.2,4.2),'figure.facecolor':'#ffffff',
     'axes.facecolor':'#ffffff','axes.labelcolor':'#334155','text.color':'#334155',
     'svg.hashsalt':'monte-carlo-lab','savefig.bbox':'tight'})
 
@@ -19,13 +22,9 @@ def execute(lesson):
     plt.close('all')
     with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
         exec(compile(code, lesson['code'], 'exec'), namespace)
-    images=[]
-    for n in plt.get_fignums():
-        image=io.StringIO()
-        plt.figure(n).savefig(image, format='svg', metadata={'Date':None})
-        images.append(image.getvalue())
+    images,narrow=capture_figures()
     plt.close('all')
-    record = dict(stdout=output.getvalue(), figures=images)
+    record = dict(stdout=output.getvalue(),figures=images,figures_narrow=narrow,illustration=illustration(lesson,namespace,output.getvalue()))
     if lesson['slug']=='will-the-room-be-full':
         values = namespace['attendance']
         record['preview'] = {'values':list(range(84,131)),

@@ -261,7 +261,7 @@
       "predict": "Should a finite simulation match the exact probability to every displayed decimal?",
       "look": "Both answers refer to the same model and boundary. A code error can hide if the supposedly independent reference repeats the same mistake.",
       "change": "Change both methods to the event attendance >= 110. Work out which survival-function argument is required.",
-      "question": "Which exact expression matches P(X >= 10) for integer X?",
+      "question": "Which exact expression matches $P(X\\ge10)$ for integer X?",
       "options": [
         "sf(10)",
         "sf(11)",
@@ -333,8 +333,8 @@
         "The expected count is n times p. Its variance is n times p times one minus p. Variance is the average squared deviation from the mean; a standard deviation is its square root. Compare the simulated summaries with these model quantities."
       ],
       "predict": "Can this model ever generate more successes than the number of opportunities?",
-      "look": "The bounded integer support is part of the model. The sample variance uses ddof=1 to estimate population variance from independent draws.",
-      "change": "Replace p=.95 with p=.5. Compare the spread as well as the mean.",
+      "look": "The bounded integer support is part of the model. The sample variance uses `ddof=1` to estimate population variance from independent draws.",
+      "change": "Replace `p=.95` with `p=.5`. Compare the spread as well as the mean.",
       "question": "Which setting directly violates this binomial model?",
       "options": [
         "A fixed group of twenty independent attempts with common p.",
@@ -477,23 +477,23 @@
       "goal": "Interpret lognormal parameters on their underlying log scale.",
       "explain": [
         "A lognormal variable is the exponential of a normal variable, so every draw is positive. It can represent multiplicative variation and right-skewed positive outcomes when the mechanism supports that choice.",
-        "The generator’s mean and sigma refer to the underlying normal draw. The median of the resulting positive variable is exp(mean). Its arithmetic mean is exp(mean plus sigma squared divided by two), which grows with sigma even if the median is held fixed.",
+        "For a lognormal model, the logarithm has normal mean $\\mu$ and standard deviation $\\sigma$. The outcome median is $e^\\mu$, while its arithmetic mean is $e^{\\mu+\\sigma^2/2}$. These parameters live on the log scale: the log standard deviation is not the standard deviation of the positive outcome.",
         "These distinctions matter when translating someone’s estimate into code. Asking for an average cost and passing that cost directly as the generator’s mean parameter would usually create a radically different distribution. Write down whether an estimate is on the original or logarithmic scale."
       ],
       "predict": "If the log-scale mean stays fixed and sigma increases, does the arithmetic mean stay fixed?",
       "look": "Positive support does not establish that a lognormal shape fits the domain. Compare its quantiles with evidence.",
-      "change": "Set log_sd to 1.2 while keeping log_mean fixed. Compare median and mean.",
+      "change": "Set `log_sd` to 1.2 while keeping `log_mean` fixed. Compare median and mean.",
       "question": "Someone gives a median of 20 and a log-scale SD of 0.4. Which mean parameter belongs in the lognormal generator?",
       "options": [
         "20",
         "0.4",
-        "np.log(20)"
+        "`np.log(20)`"
       ],
       "correct": 2,
       "feedback": "For this parameterisation the log-scale mean is the logarithm of the median. The arithmetic mean of the positive variable is another quantity.",
       "hints": [
-        "Write the model median as exp(log_mean).",
-        "Invert that relationship to obtain log_mean."
+        "Write the model median as $e^{\\mu_{\\log}}$.",
+        "Invert that relationship to obtain `log_mean`."
       ],
       "limit": "A lognormal has no finite upper bound. Hard physical bounds or different tail behaviour require a different model.",
       "source": [
@@ -556,7 +556,7 @@
       ],
       "predict": "Must the running estimate become closer to one third after every new draw?",
       "look": "The estimate can temporarily move away from the exact value. Error reduction is assessed across repetitions or with a justified error estimate.",
-      "change": "Compare n=100 and n=10000. Predict the typical error ratio before calculating it.",
+      "change": "Compare `n=100` and `n=10000`. Predict the typical error ratio before calculating it.",
       "question": "Under the independent finite-variance model, reducing standard error by a factor of ten generally needs what?",
       "options": [
         "Ten times as many runs.",
@@ -566,7 +566,7 @@
       "correct": 2,
       "feedback": "Standard error scales with one over the square root of n. A tenfold reduction therefore requires roughly a hundredfold count increase.",
       "hints": [
-        "Write SE proportional to 1/sqrt(n).",
+        "Write SE proportional to $1/\\sqrt n$.",
         "Square the desired reduction factor."
       ],
       "limit": "The square-root rule applies to this independent finite-variance estimator. It is not a universal rate for MCMC or quasi-Monte Carlo.",
@@ -588,13 +588,13 @@
       "goal": "Estimate numerical uncertainty for a mean from independent simulation draws.",
       "explain": [
         "The Monte Carlo standard error, or MCSE, estimates the repeated-simulation standard deviation of an estimator. For a mean of independent identically distributed finite-variance outcomes, use their sample standard deviation divided by the square root of the number of trials.",
-        "The sample standard deviation uses ddof=1 to account for estimating the mean. MCSE has the same units as the estimated mean. It is different from a relative error, which divides by an appropriate scale and becomes unstable near zero.",
+        "The sample standard deviation uses `ddof=1` to account for estimating the mean. MCSE has the same units as the estimated mean. It is different from a relative error, which divides by an appropriate scale and becomes unstable near zero.",
         "Repeated simulation batches provide an independent check of the formula in a tractable model. Compare the predicted standard error with the observed spread of batch means. This check relies on independent batches; replaying the same seed would make the apparent between-batch spread disappear."
       ],
       "predict": "Should the MCSE have squared units or the same units as the outcome?",
       "look": "The estimated MCSE fluctuates because it uses a finite sample SD. It should be in the same broad range as the independent-batch and model calculations.",
-      "change": "Replace n=2000 with n=8000. Compare the observed change with the square-root prediction.",
-      "question": "Your draws come from a slowly moving Markov chain. Can you automatically use SD/sqrt(raw draw count)?",
+      "change": "Replace `n=2000` with `n=8000`. Compare the observed change with the square-root prediction.",
+      "question": "Your draws come from a slowly moving Markov chain. Can you automatically use $s/\\sqrt{n}$ with the raw draw count?",
       "options": [
         "No; dependence changes the variance of the estimator.",
         "Yes; every array is independent by definition.",
@@ -661,8 +661,8 @@
       "short": "Report probability uncertainty without treating an unobserved event as impossible.",
       "goal": "Report probability uncertainty without treating an unobserved event as impossible.",
       "explain": [
-        "For a simulated yes/no event, count the successes and divide by the number of independent trials. The plug-in standard error sqrt(p_hat times one minus p_hat divided by n) collapses to zero when no successes appear. That does not establish that the model probability is zero.",
-        "An exact binomial interval avoids that particular failure. SciPy binomtest can calculate a two-sided confidence interval for the underlying probability. The interval describes repeated simulation of a fixed event model, not uncertainty about whether the model represents real failures.",
+        "For a simulated yes/no event, count the successes and divide by the number of independent trials. The plug-in standard error sqrt(`p_hat` times one minus `p_hat` divided by n) collapses to zero when no successes appear. That does not establish that the model probability is zero.",
+        "For an independently simulated yes/no event, count successes and use a binomial model to quantify probability uncertainty. The plug-in standard error $\\sqrt{\\widehat p(1-\\widehat p)/n}$ collapses to zero when no events occur. That calculation is not evidence that the event is impossible.",
         "With zero observed failures, a one-sided 95% upper bound is 1 minus 0.05 to the power one over n. This differs from the upper end of a two-sided 95% interval because the tail allocation differs. State which convention you report."
       ],
       "predict": "Can a finite run with zero failures rule out all positive failure probabilities?",
@@ -810,7 +810,7 @@
       "goal": "Fit a positive distribution and compare its quantiles with the input evidence.",
       "explain": [
         "A fitted distribution estimates parameters from observations. It can interpolate between observed values and extrapolate beyond them, but its shape is another assumption. Parameter fitting does not establish that the distribution is suitable.",
-        "Fit a lognormal model to invented positive waiting times. Fixing loc=0 makes this a positive-support, two-parameter lognormal model. SciPy returns a shape parameter, a location and a scale; these are not the same argument names used by NumPy’s generator.",
+        "Fit a lognormal model to invented positive waiting times. Fixing `loc=0` makes this a positive-support, two-parameter lognormal model. SciPy returns a shape parameter, a location and a scale; these are not the same argument names used by NumPy’s generator.",
         "Compare empirical and fitted quantiles before using the fitted tail in a decision. A reasonably matching centre does not guarantee a matching tail. With a small sample, both fit assessment and parameter estimates are uncertain, so retain the observations and show sensitivity to plausible alternatives."
       ],
       "predict": "Does a successful fit call establish that the fitted tail is realistic?",
@@ -852,7 +852,7 @@
       ],
       "predict": "If the mode is 4 and the bounds are 2 and 12, must the mean be 4?",
       "look": "The hard upper bound guarantees no larger modelled duration. That guarantee comes from the assumption, not observations.",
-      "change": "Compare high=12 and high=20 while retaining the same low and mode. Explain what changed in the input judgement.",
+      "change": "Compare `high=12` and `high=20` while retaining the same low and mode. Explain what changed in the input judgement.",
       "question": "An expert says “12 days is my 90th percentile”. Should you automatically use 12 as a triangular maximum?",
       "options": [
         "Yes, percentiles and maximum bounds are interchangeable.",
@@ -1111,7 +1111,7 @@
       ],
       "predict": "Can replacing the two weather-dependent probabilities with their average preserve the mean while changing the spread?",
       "look": "The two conditional groups have different centres. The mixed distribution includes between-weather variation.",
-      "change": "Compare against a fixed-probability binomial with p=.71. Inspect its variance and overflow probability.",
+      "change": "Compare against a fixed-probability binomial with `p=.71`. Inspect its variance and overflow probability.",
       "question": "A delivery duration depends on its route. Which generation order preserves that model?",
       "options": [
         "Draw duration first, then assign a convenient route afterwards.",
@@ -1148,7 +1148,7 @@
       ],
       "predict": "Which changes more directly with positive dependence here: the marginal means or the chance of a large sum?",
       "look": "Reusing the base normal draws makes scenarios easier to compare. It does not assign probabilities to the scenarios.",
-      "change": "Choose a decision rule such as P(total > 205) below .05. Identify which dependence scenarios meet it.",
+      "change": "Choose a decision rule such as $P(\\mathrm{total}>205)$ below .05. Identify which dependence scenarios meet it.",
       "question": "A recommendation reverses under two plausible correlation assumptions. What should you report?",
       "options": [
         "The dependency sensitivity and the evidence needed to resolve it.",
@@ -1484,7 +1484,7 @@
       "change": "Add a resource rule that forces A and B to run serially on half the days. State what drives that rule.",
       "question": "A and B run together, then C starts after both finish. Which formula is correct?",
       "options": [
-        "A+B+C",
+        "$A+B+C$",
         "max(A,B)+C",
         "min(A,B)+C"
       ],
@@ -1555,7 +1555,7 @@
       ],
       "predict": "Can waiting increase even when the service-time distribution stays unchanged?",
       "look": "Customers within one trace share queue state and are not independent samples. Use independent trace summaries for a run-level uncertainty calculation.",
-      "change": "Raise arrival_rate to 1.1, then increase the customer horizon. Explain why a short drained queue is not evidence of stable capacity.",
+      "change": "Raise `arrival_rate` to 1.1, then increase the customer horizon. Explain why a short drained queue is not evidence of stable capacity.",
       "question": "Why are successive waiting times in one queue trace usually dependent?",
       "options": [
         "They share the backlog left by earlier customers.",
@@ -1703,7 +1703,7 @@
       ],
       "predict": "Will one draw in every equal-width interval leave the same gaps as ordinary random draws?",
       "look": "The comparison uses equal evaluations per estimate. Replicate-level spread is the relevant numerical-error evidence here.",
-      "change": "Replace U squared with an indicator U>0.973 and inspect how performance changes.",
+      "change": "Replace U squared with an indicator $U>0.973$ and inspect how performance changes.",
       "question": "Two strata have probabilities 0.9 and 0.1, but you sample equally many draws in each. How should their mean estimates be combined?",
       "options": [
         "With equal weights because the sample counts match.",
@@ -1772,7 +1772,7 @@
       "goal": "Construct a control-variate estimator using a known expectation.",
       "explain": [
         "A control variate is a related random quantity whose expectation is known. Subtracting a coefficient times its deviation from that expectation leaves the target expectation unchanged, while a useful coefficient can reduce variance.",
-        "Estimate exp(U) with U as a control and known E[U]=0.5. The coefficient is fitted using a separate pilot sample, then held fixed for the production sample. This separation keeps the simple unbiasedness argument inspectable conditional on the pilot coefficient.",
+        "Estimate $e^U$ with U as a control and known E[U]=0.5. The coefficient is fitted using a separate pilot sample, then held fixed for the production sample. This separation keeps the simple unbiasedness argument inspectable conditional on the pilot coefficient.",
         "A poor coefficient can increase variance. A wrong claimed control expectation shifts the target and introduces bias. Always state where the reference expectation comes from and compare precision for the actual controlled estimator. More elaborate same-sample coefficient procedures need their own analysis."
       ],
       "predict": "What happens if you subtract a control whose supposed expectation is wrong?",
@@ -1809,7 +1809,7 @@
       "goal": "Compare randomised quasi-Monte Carlo estimates using independent scrambles.",
       "explain": [
         "Quasi-Monte Carlo points are designed to cover a domain more evenly than ordinary independent random points. A scrambled Sobol sequence introduces randomisation while retaining useful structure. It is a different sampling design, so the ordinary iid point-level error formula is not automatically appropriate.",
-        "Use a power-of-two point count with random_base2 to preserve the sequence’s balance properties. Each independent scramble produces one estimate. The spread across those estimates provides evidence about randomisation error for this experiment.",
+        "Use a power-of-two point count with `random_base2` to preserve the sequence’s balance properties. Each independent scramble produces one estimate. The spread across those estimates provides evidence about randomisation error for this experiment.",
         "The example integrates a smooth two-dimensional function with known answer. Smoothness, dimension, variable ordering and discontinuities can all affect performance. Better coverage in one illustration does not imply every integrand or tail event will improve. Retain the method, scramble seeds and evaluation budget in the record."
       ],
       "predict": "Should the structured points inside one scramble be treated as iid draws for the ordinary standard-error formula?",
@@ -2147,7 +2147,7 @@
       ],
       "predict": "Which is stronger evidence for a ledger than merely getting a positive average?",
       "look": "The ledger checks every listed trial. A mean can hide both positive and negative errors that cancel.",
-      "change": "Introduce an intentional bug such as served=demand, observe the failed check, then restore the correct rule.",
+      "change": "Introduce an intentional bug such as `served=demand`, observe the failed check, then restore the correct rule.",
       "question": "A model produces negative durations. What is the useful first response?",
       "options": [
         "Silently replace them and report the original model name.",
@@ -2184,7 +2184,7 @@
       ],
       "predict": "What happens if every worker is initialised with exactly the same seed?",
       "look": "The child streams differ while the overall construction can be replayed. Different sample values alone would not prove arbitrary generators independent.",
-      "change": "Compare with four generators all created using default_rng(2026). Explain the duplicated batches.",
+      "change": "Compare with four generators all created using `default_rng(2026)`. Explain the duplicated batches.",
       "question": "Which record best supports replay of a multi-stream simulation?",
       "options": [
         "Parent seed, stream construction, generator/package versions and worker-to-stream mapping.",
@@ -2289,8 +2289,8 @@
       "short": "Generate a target distribution by transforming a uniform draw through its inverse CDF.",
       "goal": "Generate a target distribution by transforming a uniform draw through its inverse CDF.",
       "explain": [
-        "A cumulative distribution function, or CDF, gives P(X <= x). Its inverse maps a probability level to the corresponding quantile. Applying that inverse to a uniform draw produces the target distribution under the usual generalised-inverse construction.",
-        "For an exponential distribution of mean scale s, the inverse is minus s times log(1-U). NumPy log1p(-U) evaluates log(1-U) accurately when U is small. The generator returns U in [0,1), so this form avoids taking log of zero at the excluded upper endpoint.",
+        "A cumulative distribution function, or CDF, gives $P(X\\le x)$. Its inverse maps a probability level to the corresponding quantile. Applying that inverse to a uniform draw produces the target distribution under the usual generalised-inverse construction.",
+        "For an exponential distribution with scale $s$, the inverse transform is $-s\\log(1-U)$. NumPy’s `log1p(-U)` evaluates $\\log(1-U)$ accurately when $U$ is small. The same uniform input should give the same quantile through this formula and the library inverse CDF; keep the domain and units attached.",
         "The transformation is a sampling mechanism, not evidence that an exponential model fits a real process. Check its support, quantiles and moments against the stated target. Other inverse CDFs may require numerical evaluation, and finite precision can matter in extreme tails."
       ],
       "predict": "What does a uniform probability near one map to in a right-tailed exponential distribution?",
@@ -2327,7 +2327,7 @@
       "goal": "Construct a rejection sampler using a valid envelope.",
       "explain": [
         "For a continuous variable, a probability density is a relative height whose integral over a region gives probability. Its height is not the probability of observing one exact continuous value. A rejection sampler proposes from q and accepts with probability p(x)/(M q(x)) when M q bounds the target density p.",
-        "Use a uniform proposal on [0,1] for target density p(x)=2x. The bound M=2 makes acceptance probability x. The accepted values should have target mean two thirds, and the acceptance fraction should approach one half.",
+        "Use a uniform proposal on [0,1] for target density p(x)=2x. The bound $M=2$ makes acceptance probability x. The accepted values should have target mean two thirds, and the acceptance fraction should approach one half.",
         "The envelope bound must hold over the whole contributing support. Choosing M too small makes an acceptance probability above one and invalidates the algorithm. Poorly matched envelopes can also waste most proposals, especially in higher dimensions. Count attempted and accepted proposals separately."
       ],
       "predict": "Will accepted samples remain uniformly distributed when high proposals are accepted more often?",
@@ -2364,7 +2364,7 @@
       "goal": "Use a target-to-proposal density ratio to estimate a target expectation.",
       "explain": [
         "Importance sampling estimates an expectation under a target distribution p while drawing from a proposal q. Multiply the function value by p(x)/q(x), then average under q. The density ratio corrects for sampling some regions more or less often.",
-        "The target here is standard normal and the function is exp(X). We draw from a normal proposal shifted towards larger X, where the function contributes more. Using the unweighted proposal average would answer a different question.",
+        "The target here is standard normal and the function is $e^X$. We draw from a normal proposal shifted towards larger X, where the function contributes more. Using the unweighted proposal average would answer a different question.",
         "Work in log densities when convenient, then exponentiate the combined log contribution. The proposal must cover every region where the target integrand contributes, and the weighted estimator needs suitable moments for an ordinary MCSE calculation. A valid estimator can still be so variable that a modest run is misleading."
       ],
       "predict": "Does moving the proposal mean change the target expectation when weights are correct?",
@@ -2438,7 +2438,7 @@
       "goal": "Normalise extreme log weights without numerical underflow.",
       "explain": [
         "Probability densities and likelihood products can be extremely small or large. Direct exponentiation can underflow to zero or overflow to infinity before an otherwise meaningful ratio is calculated.",
-        "For log weights l_i, subtract logsumexp(l) before exponentiating to obtain normalised weights. Adding a common constant to every log weight leaves those normalised weights unchanged. The operation stabilises the arithmetic; it does not improve the statistical overlap of target and proposal.",
+        "For log weights l_i, subtract `logsumexp(l)` before exponentiating to obtain normalised weights. Adding a common constant to every log weight leaves those normalised weights unchanged. The operation stabilises the arithmetic; it does not improve the statistical overlap of target and proposal.",
         "Normalising weights also has a statistical meaning. If a target normalising constant is unknown, using a ratio of weighted sums creates a self-normalised estimator, discussed later. Do not silently replace an ordinary unbiased importance estimator with a different ratio estimator while keeping the original error interpretation."
       ],
       "predict": "Should adding the same constant to every log weight change their normalised proportions?",
@@ -2554,7 +2554,7 @@
       ],
       "predict": "Does cancelling an unknown constant also eliminate every finite-sample bias?",
       "look": "The analytical check is valuable because a stable-looking ratio can still be inaccurate. Ordinary iid SE of the raw X squared values would ignore the weights and ratio.",
-      "change": "Compare independent repetitions at n=100, 1000 and 20000. Keep finite-sample variability separate from a theoretical bias claim.",
+      "change": "Compare independent repetitions at `n=100`, 1000 and 20000. Keep finite-sample variability separate from a theoretical bias claim.",
       "question": "Which statement fits a self-normalised importance estimator?",
       "options": [
         "It is always exactly unbiased at finite n.",
@@ -2564,7 +2564,7 @@
       "correct": 1,
       "feedback": "Normalising can remove an unknown constant but changes the estimator into a ratio. Its convergence and error analysis need the appropriate assumptions.",
       "hints": [
-        "Compare E[A/B] with E[A]/E[B].",
+        "Compare $E[A/B]$ with $E[A]/E[B]$.",
         "Check support and overlap even when constants cancel."
       ],
       "limit": "This uses a tractable one-dimensional target. General self-normalised error estimation and multi-modal overlap require further checks.",
@@ -2589,7 +2589,7 @@
         "For independent yes/no observations with one common probability p, the binomial likelihood is proportional to p to the successes times (1-p) to the failures. A beta prior has density proportional to p to the (a-1) times (1-p) to the (b-1), for p between zero and one. Multiplication therefore gives a beta posterior with updated shape parameters.",
         "The invented observation is 18 successes in 30 trials, with a beta(2,2) prior. This calculation is exact and does not need Monte Carlo. Establishing the target first gives the later sampling algorithms something known to check. The prior and observation model are assumptions that deserve inspection, especially with limited data."
       ],
-      "predict": "Will 18 successes out of 30 make the posterior mean exactly 18/30 under this prior?",
+      "predict": "Will 18 successes out of 30 make the posterior mean exactly $18/30$ under this prior?",
       "look": "The posterior interval concerns the uncertain probability p conditional on this prior, data and likelihood. It is not a range of counts in the next group.",
       "change": "Change the prior to beta(20,20). Describe how much the same observations move its mean.",
       "question": "A stronger prior concentrates near 0.5. What should you examine before using it?",
@@ -2628,7 +2628,7 @@
       ],
       "predict": "Does increasing posterior draws from 1,000 to 100,000 supply more observed evidence?",
       "look": "The posterior SD describes uncertainty in p. MCSE describes numerical error in the estimated posterior event probability. Their units and targets differ.",
-      "change": "Estimate P(p > .7), then compare with stats.beta.sf(.7,a,b).",
+      "change": "Estimate $P(p>0.7)$, then compare with stats.beta.sf(.7,a,b).",
       "question": "A posterior mean estimate becomes numerically very precise. What follows?",
       "options": [
         "The underlying parameter is now known exactly.",
@@ -2702,7 +2702,7 @@
       ],
       "predict": "Does drawing an independence proposal make the proposal-density correction unnecessary?",
       "look": "The proposal correction uses current over proposed density for an independence sampler. Reversing that ratio implements a different algorithm.",
-      "change": "Change the proposal to beta(10,10) in both the draw and log_q. Inspect acceptance and multiple seeds.",
+      "change": "Change the proposal to beta(10,10) in both the draw and `log_q`. Inspect acceptance and multiple seeds.",
       "question": "For q(y|x), what proposal factor belongs in the acceptance ratio?",
       "options": [
         "q(y|x) / q(x|y).",
@@ -2734,7 +2734,7 @@
       "goal": "Implement a Gibbs sampler using the latest value of each coordinate.",
       "explain": [
         "Gibbs sampling updates components by drawing from their conditional distributions given the other components. Exact conditional draws require no Metropolis rejection step. The resulting sequence is still a Markov chain and its successive states are usually dependent.",
-        "For a zero-mean bivariate normal with unit marginal variances and correlation rho, X given Y=y is normal with mean rho*y and variance 1-rho squared. The conditional for Y is analogous. First update X from the current Y, then update Y from the newly drawn X.",
+        "For a zero-mean bivariate normal with unit marginal variances and correlation rho, X given $Y=y$ is normal with mean $\\rho y$ and variance 1-rho squared. The conditional for Y is analogous. First update X from the current Y, then update Y from the newly drawn X.",
         "The code records a state after both coordinate updates, called a sweep here. Strong correlation can slow movement along a narrow joint distribution even though every conditional draw is accepted. The known means and covariance supply checks; they do not make correlated draws independent."
       ],
       "predict": "In the second update of a sweep, should Y condition on the old X or the newly drawn X?",
@@ -2776,7 +2776,7 @@
       ],
       "predict": "For positively correlated draws, will the iid formula usually overstate or understate mean precision?",
       "look": "The known AR(1) approximation gives a reference for this experiment. ESS is not a guarantee that an arbitrary MCMC chain reached its target.",
-      "change": "Compare rho=.3 and rho=.95. Repeat with independent seeds and inspect ESS variability.",
+      "change": "Compare `rho=.3` and `rho=.95`. Repeat with independent seeds and inspect ESS variability.",
       "question": "Can a large ESS for the parameter mean guarantee an accurate rare-tail probability?",
       "options": [
         "Yes, all statistics share one ESS.",
@@ -2850,7 +2850,7 @@
       ],
       "predict": "Can the plug-in and full predictive distributions share a mean but have different spreads?",
       "look": "Count quantiles describe future group outcomes; p quantiles describe a parameter. Neither is the numerical error bar on an estimated mean.",
-      "change": "Increase future_n to 100. Compare how parameter uncertainty contributes to the two predictive variances.",
+      "change": "Increase `future_n` to 100. Compare how parameter uncertainty contributes to the two predictive variances.",
       "question": "Which simulation represents the full posterior predictive count?",
       "options": [
         "Fix p at its posterior mean in every draw.",
@@ -2929,7 +2929,7 @@
       "change": "Add a £20000 rollback cost in worlds with an explicitly modelled cutover failure. State whether failure also extends duration.",
       "question": "Two preparation tasks run simultaneously before validation. What is the basic finish-time rule?",
       "options": [
-        "A+B+validation.",
+        "$A+B+\\mathrm{validation}$.",
         "max(A,B)+validation.",
         "min(A,B)+validation."
       ],
