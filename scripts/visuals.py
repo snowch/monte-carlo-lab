@@ -96,6 +96,16 @@ FLOWS={
 
 def image(index,w,ns):
  title='See the model';caption='';formula=None;legend=[]
+ if index==0:
+  seats=ns['seats'];events=ns['events'];c=Canvas(w,'Four invented events. Each row contains all three guest decisions. One of the four events exceeds two seats.',h=270)
+  c.text(12,25,'Event','start');c.text(w*.45,25,'Guests');c.text(w*.83,25,'Result')
+  for i,guests in enumerate(events):
+   y=72+i*52;c.text(28,y+7,i+1)
+   for j,value in enumerate(guests):
+    x=w*(.32+j*.13);c.rect(x-17,y-18,34,36,'tile tile-1' if value else 'tile');c.text(x,y+7,value)
+   count=sum(guests);c.text(w*.83,y+7,f'{count} · '+('Over' if count>seats else 'Fits'))
+  caption='Each row is one complete invented event: 1 attends and 0 is absent. Only three attendees exceed two seats. One overflow in four rows is 1/4, or 25%. These hand-picked examples teach counting; they are not random samples from the 72% attendance model.'
+  return dict(title='Two seats. Which complete events overflow?',caption=caption,svg=c.finish())
  if index==25:
   x=np.linspace(40,80,161);independent=np.where(x<=60,(x-40)/400,(80-x)/400);shared=np.full_like(x,1/40)
   caption='Exact density references for the two authored models. Independent inputs produce a triangular total; sharing one uniform input produces a uniform total. Both means are 60, but the probability above the line at 70 is 0.125 versus 0.25. These are model calculations, not measured evidence.'

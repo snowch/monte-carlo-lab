@@ -10,7 +10,7 @@ from scipy import stats
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 COURSE=json.loads((ROOT/'src/course.json').read_text())
-LESSONS=COURSE['lessons'];ALL=LESSONS+COURSE['applications']
+LESSONS=COURSE['lessons'];ALL=LESSONS+COURSE['applications']+[COURSE['introduction']]
 
 def run(lesson,source=None):
     namespace={'__name__':'__main__'}
@@ -61,7 +61,7 @@ class CourseTests(unittest.TestCase):
     def test_learning_routes_are_complete(self):
         self.assertEqual(len(LESSONS),76)
         self.assertEqual(len(COURSE['applications']),3)
-        self.assertEqual(len({l['slug'] for l in ALL}),79)
+        self.assertEqual(len({l['slug'] for l in ALL}),80)
         self.assertEqual(sum(l['track']=='core' for l in LESSONS),60)
         self.assertEqual(sum(l['track']=='advanced' for l in LESSONS),16)
         for m in range(12):self.assertEqual(sum(l['module']==m for l in LESSONS),6 if m<10 else 8)
@@ -73,6 +73,19 @@ class CourseTests(unittest.TestCase):
             self.assertEqual(len(lesson['hints']),2)
             self.assertTrue(all(lesson[k] for k in ['goal','predict','look','change','feedback','limit','kind','source']))
             self.assertIn('No real-world outcomes were measured',(ROOT/'python'/lesson['code']).read_text())
+    def test_probability_refresher_preserves_whole_event_and_strict_boundary(self):
+        lesson=COURSE['introduction']
+        ns,output=self.runs[lesson['slug']]
+        self.assertEqual(ns['overflow_count'],1)
+        self.assertEqual(ns['fraction'],.25)
+        self.assertIn('not an estimated model probability',output)
+        source=(ROOT/'python'/lesson['code']).read_text()
+        changed,_=run(lesson,source.replace('seats = 2','seats = 1'))
+        self.assertEqual(changed['events'],ns['events'])
+        self.assertEqual(changed['overflow_count'],3)
+        self.assertEqual(changed['fraction'],.75)
+        full,_=run(lesson,source.replace('seats = 2','seats = 3'))
+        self.assertEqual(full['overflow_count'],0)
     def test_attendance_matches_exact_probability_with_sampling_error(self):
         ns=self.ns(1)
         exact=stats.binom.sf(110,150,.72)

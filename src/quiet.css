@@ -70,6 +70,8 @@
 @media(max-width:370px){.site-header nav>a.course-home-link{display:inline-flex}.site-header .brand-symbol{width:26px;height:26px}.header-inner{padding-left:14px;padding-right:14px}.site-header nav{gap:4px}.site-header .brand{max-width:145px}.site-header .brand>span{min-width:0}}
 @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}}
 .lesson-context>span{white-space:normal}.brand>span,.header-help a{overflow-wrap:anywhere}
+.prelude-note{font-size:1rem;line-height:1.7;color:var(--muted);margin:14px 0 0}.prelude-note a{color:var(--accent)}
+.prelude-link{display:block;font-size:1rem;line-height:1.7;padding:8px 8px 16px;margin:0 0 14px;border-bottom:1px solid var(--line);text-decoration:none}.prelude-link>span{display:block;font-size:.875rem;color:var(--muted)}.prelude-link[aria-current=page]{color:var(--accent);font-weight:600}
 @media(max-width:700px){.site-header nav{flex-wrap:wrap;max-width:100%}}
 
 .storage-error{font-size:1rem;line-height:1.8;color:var(--warning);margin:18px 0}

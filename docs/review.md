@@ -118,3 +118,82 @@ The opening source now plots its actual attendance draws and a strict overflow b
 Reviewed reference diagrams at 320px and 820px, selected light/dark phone figures, every generated phone chart and the actual first-lesson execution. The label/equation audit passed for all 79 references. Browser regressions check visible reference content, internal label bounds, equation fit, responsive plot sources and no-JavaScript reading. The full native/Wasm suite retains known statistical targets, weighted-tail accuracy, MCMC checks, scenario invariants, all capstone starters, CSV validation, exact-source exports, recovery, drafts, 320/390px layouts, 820/1024px navigation and 200% text. CI repeats checks before deployment and uploads evidence.
 
 These are author, mathematical-reference and browser checks, not a learner study or proof of improved learning. Phone layouts were reviewed in Chromium at emulated widths; every physical device and browser has not been evaluated.
+
+## 2026-11-13 — concepts introduced before explanation
+
+Reviewed all 81 Monte Carlo Lab learning pages at f9b0ce0: 60 core lessons,
+16 advanced lessons, three workbooks, the overview and field notes. Applied the
+repository learning-design and UX skills to the essential route with optional
+help closed. Reviewed prose, reference diagrams and rendering order, code/output
+labels, predictions, changes, questions, feedback, hints and scope statements.
+The complete findings and a row for every page are in
+[the concept introduction audit](concept-audit.md).
+
+Found 26 substantive prerequisite/explanation gaps, eight sequencing problems,
+26 smaller clarification items and 21 pages with no additional gap in their new
+concept, assuming earlier prerequisites are repaired. These are author-review
+classifications, not measured learner difficulties. Key repairs concern opening
+probability/independence and NumPy operations, early lognormal/quantile sequencing,
+local notation, confidence-interval coverage, covariance/matrix construction,
+advanced weighting/MCMC diagnostics and workbook domain terms. The declared
+advanced logarithm/density prerequisites were respected. A late glossary entry
+was not treated as sufficient teaching for an essential earlier use.
+
+Two adjacent errors also need correction: lesson 17 repeats its plug-in-SE
+explanation while omitting the exact-binomial method explanation; lesson 70
+incorrectly says posterior SD of p and MCSE of a probability estimate have
+different units. Both quantities are dimensionless. The lesson-12 lognormal
+hint was checked with KaTeX/MathML and renders correctly.
+
+Validation: confirmed all 79 lesson/workbook slugs appear exactly once in the
+audit, included both support pages, resolved the relative documentation links,
+checked table structure and confirmed all page targets in the existing generated
+site. Documentation whitespace was checked. No course content, generated site
+or deployment was changed. The execution suite was not rerun for this
+documentation-only review; content repairs will require the usual native,
+build/link and browser checks. Novice comprehension remains untested.
+
+## 2026-11-13 — optional probability lesson 0
+
+Added Probability essentials as a seven-minute optional preparation page before
+lesson 1. Its one outcome is reading the opening attendance model in plain
+language: a guest's probability, independent attendance and a whole-event trial.
+It explains fractions/percentages, why 72% does not force a fixed turnout, how
+shared travel can violate independence and why exactly full is not overflow.
+The source reference is OpenStax Introductory Statistics, Probability Topics.
+
+Four explicitly invented events support a labelled guest-decision diagram and
+a short editable Python counting example. The example demonstrates a fraction;
+it does not claim that four hand-picked rows estimate an attendance-model
+probability. The illustration appears after its prerequisite explanations and
+uses digits/text as well as colour. The change task preserves guest decisions
+while changing the seat boundary; the fresh question tests shared attendance.
+The complete explanation and worked output remain readable without JavaScript.
+
+Applied the repository learning-design and UX skills before drafting and after
+reviewing the essential reading flow with optional panels closed. Entry points
+are on the overview, sidebar, first lesson and before-start notes. A direct skip
+link and next/previous navigation connect the refresher to lesson 1. Reading
+marks, saved drafts and progress import/export include the refresher, while the
+main denominator remains 76. Existing lesson slugs and numbers are unchanged.
+Lesson 1 also gives brief definitions of chance/independence and explains
+True/False averaging, so the optional route is not a required hidden step.
+
+Verification: all 80 published sources executed natively; 12 native tests passed,
+including unchanged guest inputs, one overflow out of four with two seats,
+three out of four with one seat, and zero with three seats. The build generated
+the reference from those published inputs. The link check passed for 82 learning
+pages and 7,890 relative links/fragments. All 80 examples passed real-Wasm
+execution and native numerical comparison. Browser checks covered the actual
+refresher run/change, feedback, skip/return navigation, saved notes, separate
+reading count and restoring its records in a fresh browser context. Existing
+CSV/export, error/Stop, narrow-layout, theme, no-JavaScript, 200% text and
+tablet checks also passed.
+
+Captured new 320/390/820/1440px views and inspected the phone light/dark
+screenshots; the guest diagram retains its labels and numbers without whole-page
+horizontal overflow.
+Evidence is in test-results/lesson-zero-*.png (local test artifacts). These are
+author and functional checks, not novice learner validation. The earlier concept
+audit remains a baseline record; this change does not claim to resolve all its
+other findings.

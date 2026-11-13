@@ -7,7 +7,7 @@ from quiet_checks import check_quiet_layout
 ROOT=Path(__file__).resolve().parents[1]
 COURSE=json.loads((ROOT/'src/course.json').read_text())
 LESSONS=COURSE['lessons']
-ALL=LESSONS+COURSE['applications']
+ALL=LESSONS+COURSE['applications']+[COURSE['introduction']]
 CAPSTONE=next(l for l in LESSONS if l['capstone'])
 RESULTS=ROOT/'test-results';RESULTS.mkdir(exist_ok=True)
 BASE='http://127.0.0.1:5186/monte-carlo-lab/'
@@ -64,6 +64,31 @@ try:
         page.locator('#search').fill('no-such-topic-zzzz')
         assert page.locator('#search-empty').is_visible()
         page.locator('#search').fill('')
+        # The optional preparation page is executable and portable, but never
+        # changes the existing course count or lesson identities.
+        assert page.locator('#lesson-zero-link').get_attribute('href')=='lessons/probability-essentials.html'
+        page.locator('#lesson-zero-link').click()
+        page.wait_for_selector('html[data-ready="true"]')
+        assert 'Lesson 0 · Optional' in page.locator('.lesson-context').inner_text()
+        assert page.locator('.concept-figure').evaluate('e=>e.previousElementSibling.textContent').startswith('For room overflow')
+        assert page.locator('.prelude-note a').inner_text()=='Skip to lesson 1'
+        assert page.locator('.prelude-link').get_attribute('aria-current')=='page'
+        page.locator('#run').click();wait_result(page)
+        assert 'Illustrative fraction: 0.25 = 25.0 %' in page.locator('#output').inner_text()
+        source=page.locator('#code').input_value()
+        page.locator('#code').fill(source.replace('seats = 2','seats = 1'))
+        page.locator('#run').click();wait_result(page)
+        assert 'Illustrative fraction: 0.75 = 75.0 %' in page.locator('#output').inner_text()
+        restore_example(page)
+        page.locator('input[name=answer][value="0"]').check();page.locator('#quiz button').click()
+        assert 'reasoning fits' in page.locator('#quiz-feedback').inner_text()
+        open_optional(page,'lesson-notes');page.locator('#notes').fill('Probability refresher note')
+        page.locator('#mark-read').check()
+        page.locator('.prelude-note a').click();page.wait_for_selector('html[data-ready="true"]')
+        assert 'Lesson 01 of 76' in page.locator('.lesson-context').inner_text()
+        assert page.locator('.lesson-pagination a').first.get_attribute('href')=='probability-essentials.html'
+        visit(page,BASE)
+        assert page.locator('#progress-count').inner_text()=='0 / 76 read'
         page.evaluate("localStorage.setItem('mcl:v1:read:will-the-room-be-full','true')")
         visit(page,BASE)
         assert page.locator('#start-label').inner_text()=='Continue learning'
@@ -244,6 +269,9 @@ try:
         second.locator('#import-progress').set_input_files(str(RESULTS/'progress.json'))
         second.wait_for_function("document.querySelector('#progress-status').textContent.startsWith('Imported')")
         assert second.locator('#progress-count').inner_text()=='76 / 76 read'
+        visit(second,BASE+'lessons/probability-essentials.html')
+        assert second.locator('#notes').input_value()=='Probability refresher note'
+        assert second.locator('#mark-read').is_checked()
         visit(second,BASE+'lessons/'+LESSONS[0]['slug']+'.html')
         assert second.locator('#notes').input_value()=='A note to preserve'
         print('PASS 200% text, menu and portable progress',flush=True)
@@ -263,6 +291,6 @@ try:
         assert errors==[],errors
         check_quiet_layout(browser,ROOT,BASE,LESSONS)
         browser.close()
-        print('PASS: 79 real Wasm experiments; native numerical agreement; CSV validation and provenance; feedback; error and Stop recovery; drafts; portable exports; mobile 390/320px; both themes; JavaScript-free reading.',flush=True)
+        print('PASS: 80 real Wasm examples including optional lesson 0; native numerical agreement; CSV validation and provenance; feedback; error and Stop recovery; drafts; portable exports; mobile 390/320px; both themes; JavaScript-free reading.',flush=True)
 finally:
     server.terminate();server.wait(timeout=10)

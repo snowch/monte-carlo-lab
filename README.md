@@ -156,6 +156,11 @@ Construct, check and use samples from a posterior distribution.
 
 Basic Python is the only core prerequisite. The advanced route assumes the core, logarithms and elementary probability densities. Most initial passes take 6–11 minutes; exploration and an independent capstone take longer. Reading marks are self-reported progress, not assessed mastery.
 
+New to probability? Start with [optional lesson 0: Probability essentials](https://snowch.github.io/monte-carlo-lab/lessons/probability-essentials.html).
+This short visual refresher explains chance, independent attendance and a complete-event
+trial using four invented events and editable Python. It has a skip link and its
+own saved reading mark; the main course remains 76 numbered lessons.
+
 ```sh
 npm ci
 python3 -m venv .venv

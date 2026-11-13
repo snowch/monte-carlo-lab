@@ -1,5 +1,42 @@
 {
   "title": "Monte Carlo Lab",
+  "introduction": {
+    "slug": "probability-essentials",
+    "title": "Probability essentials",
+    "short": "Read a chance, an independence assumption and a complete-event trial.",
+    "goal": "Read the first attendance model in plain language.",
+    "explain": [
+      "Probability is a number from 0 to 1 describing chance under a model: 0 means impossible and 1 means certain. A chance of 0.72 is 72 out of 100, or 72%. Across many comparable occasions, the attendance fraction should tend towards that chance under the model; exactly 72 of every 100 guests need not attend. Lesson 1 assumes this chance for teaching. It is not a measured attendance rate.",
+      "Independent attendance means that learning whether one guest attends does not change another guest’s chance in the model. Several guests can still attend together. Friends travelling together could break that assumption: knowing one is coming may tell you about the other. Independence is a modelling choice to check, not a property guaranteed by sending separate invitations.",
+      "For room overflow, one trial must contain the whole event, including every guest decision. Count attendees, then ask whether the count is greater than the seats. Exactly full still fits. A fraction is a part divided by a total: one overflow among four events is 1/4 = 0.25 = 25%. Below, 1 means attends and 0 means absent. Sum adds those guest decisions. These four hand-picked events illustrate counting; they are not random draws from the 72% model."
+    ],
+    "predict": "With two seats, which of these four events overflows?",
+    "look": "One guest decision and one whole-event overflow decision have different meanings. Only the event with all three guests overflows two seats. The printed 25% describes these four invented examples; it is not a simulation estimate of the first lesson’s room risk.",
+    "change": "Change seats from 2 to 1. Predict which events now overflow, then run again. Keep the guest decisions unchanged.",
+    "question": "Each of two guests has a 72% attendance chance. They travel together, so learning that one attends changes the other’s chance. What needs revisiting?",
+    "options": [
+      "The independence assumption; the individual chances alone do not describe how they attend together.",
+      "The rule that exactly 72% of every small group must attend.",
+      "The idea that an overflow trial should contain the whole event."
+    ],
+    "correct": 0,
+    "feedback": "Independence concerns the relationship between guest decisions. A shared journey can link them even when each person’s individual chance is unchanged. The guest chance is not the room-overflow probability, and a small group need not match its expected attendance fraction.",
+    "hints": [
+      "Ask what knowing one guest’s decision tells you about the other.",
+      "Independent means that learning one decision does not change the modelled chance of the other."
+    ],
+    "limit": "The events are deliberately invented to explain the counting rule. They are neither measured attendance nor a random simulation. Lesson 1 generates many possible events under an explicit probability model.",
+    "source": [
+      "OpenStax · Introductory Statistics: probability topics",
+      "https://openstax.org/books/introductory-statistics-2e/pages/3-introduction"
+    ],
+    "minutes": 7,
+    "kind": "Four invented events · a counting demonstration",
+    "module": -1,
+    "code": "00-probability-essentials.py",
+    "track": "refresher",
+    "capstone": false
+  },
   "modules": [
     {
       "title": "Your first simulation",
@@ -69,12 +106,12 @@
       "short": "Estimate the probability that attendance exceeds a room’s capacity.",
       "goal": "Estimate the probability that attendance exceeds a room’s capacity.",
       "explain": [
-        "An organiser has invited 150 people to a room with 110 seats. Suppose each person independently attends with probability 0.72. That probability is an explicit teaching assumption, not a measured attendance rate. A simulation generates possible events under those conditions.",
+        "An organiser has invited 150 people to a room with 110 seats. Suppose each guest has a 0.72 (72%) chance of attending. Assume independent attendance: learning one guest’s decision does not change another guest’s chance. This is an explicit teaching model, not a measured attendance rate. A simulation generates possible events under those assumptions.",
         "One trial is one complete event: draw who attends, count them and compare the count with the seats. Repeating that procedure produces a distribution of possible attendance. A probability estimate is the fraction of trials satisfying a stated condition, here attendance greater than 110.",
-        "NumPy’s binomial generator counts successes in a fixed number of independent yes/no trials. Its arguments are invitation count, attendance probability and the number of simulated events. The seed above makes this particular run repeatable. Your estimate describes the model; checking whether the assumptions describe real guests is a separate task."
+        "NumPy’s binomial generator counts yes/no successes among a fixed number of opportunities. Here those opportunities are the individual guests; one complete Monte Carlo trial is still the whole event. The arguments are invitation count, guest attendance chance and number of simulated events. The seed makes this particular run repeatable. Your estimate describes the model; checking whether its assumptions describe real guests is a separate task."
       ],
       "predict": "Will raising the seat count change attendance, or only the overflow condition?",
-      "look": "The comparison is strictly greater than the capacity. Exactly 110 guests fit in 110 seats. The boolean array contains one overflow decision per simulated event.",
+      "look": "The comparison is strictly greater than the capacity. Exactly 110 guests fit in 110 seats. The boolean array contains one overflow decision per simulated event: True counts as 1 and False as 0, so its mean is the fraction of events that overflow.",
       "change": "Change seats to 120 while retaining the seed. Predict which outputs change.",
       "question": "You want the probability of at least 110 attendees. Which condition matches?",
       "options": [

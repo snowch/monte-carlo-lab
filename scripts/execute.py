@@ -34,7 +34,7 @@ def execute(lesson):
 
 if __name__=='__main__':
     course=json.loads((ROOT/'src/course.json').read_text())
-    result={l['slug']:execute(l) for l in course['lessons']+course['applications']}
+    result={l['slug']:execute(l) for l in course['lessons']+course['applications']+[course['introduction']]}
     record={'environment':{'python':platform.python_version(),'numpy':numpy.__version__,
         'scipy':scipy.__version__,'pandas':pandas.__version__,'matplotlib':matplotlib.__version__,
         'kind':'Executed from the published Python during the site build; separate from your browser execution.'},'lessons':result}

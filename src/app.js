@@ -46,11 +46,11 @@ const course=await fetch(new URL('course.json',root),{cache:'no-cache'}).then(re
 if(course){
  updateReadMarks();
  if($('search'))initializeOverview(course);
- const lesson=[...course.lessons,...course.applications].find(l=>l.slug===document.querySelector('[data-slug]')?.dataset.slug);
+ const lesson=[course.introduction,...course.lessons,...course.applications].find(l=>l.slug===document.querySelector('[data-slug]')?.dataset.slug);
  if(lesson)initializeLesson(lesson);
  document.documentElement.dataset.ready='true';
 }
-function initializeOverview({lessons,applications}){
+function initializeOverview({lessons,applications,introduction}){
  function progress(){
   const read=lessons.filter(l=>get('read:'+l.slug)==='true').length;
   $('progress-count').textContent=`${read} / ${lessons.length} read`;
@@ -95,7 +95,7 @@ function initializeOverview({lessons,applications}){
    if(file.size>1_000_000)throw new Error('Progress file must be smaller than 1 MB.');
    const record=JSON.parse(await file.text());
    if(record.course!=='monte-carlo-lab'||record.schema!==1||!record.data||typeof record.data!=='object'||Array.isArray(record.data))throw new Error('Not a version 1 Monte Carlo Lab progress file.');
-   const slugs=new Set([...lessons,...applications].map(l=>l.slug));
+   const slugs=new Set([introduction,...lessons,...applications].map(l=>l.slug));
    const fields=new Set(['code','prediction','notes','quiz','report-question','report-plan','report-source','report-finding','report-limits']);
    const entries=Object.entries(record.data);
    for(const[key,value]of entries){
