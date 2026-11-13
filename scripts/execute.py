@@ -1,0 +1,45 @@
+# Copyright © 2026 Christopher Snow
+"""Execute the exact learner examples and produce honest worked records."""
+import contextlib, io, json, platform, sys
+from pathlib import Path
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy, scipy, pandas
+ROOT = Path(__file__).resolve().parents[1]
+plt.rcParams.update({'font.family':'DejaVu Sans','font.size':13,'axes.spines.top':False,
+    'axes.spines.right':False,'figure.figsize':(7,3.4),'figure.facecolor':'#ffffff',
+    'axes.facecolor':'#ffffff','axes.labelcolor':'#334155','text.color':'#334155',
+    'svg.hashsalt':'monte-carlo-lab','savefig.bbox':'tight'})
+
+def execute(lesson):
+    code = (ROOT/'python'/lesson['code']).read_text()
+    namespace = {'__name__':'__main__'}
+    output = io.StringIO()
+    plt.close('all')
+    with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+        exec(compile(code, lesson['code'], 'exec'), namespace)
+    images=[]
+    for n in plt.get_fignums():
+        image=io.StringIO()
+        plt.figure(n).savefig(image, format='svg', metadata={'Date':None})
+        images.append(image.getvalue())
+    plt.close('all')
+    record = dict(stdout=output.getvalue(), figures=images)
+    if lesson['slug']=='will-the-room-be-full':
+        values = namespace['attendance']
+        record['preview'] = {'values':list(range(84,131)),
+            'counts':[int((values==v).sum()) for v in range(84,131)],
+            'overflow':int((values>110).sum())}
+    return record
+
+if __name__=='__main__':
+    course=json.loads((ROOT/'src/course.json').read_text())
+    result={l['slug']:execute(l) for l in course['lessons']+course['applications']}
+    record={'environment':{'python':platform.python_version(),'numpy':numpy.__version__,
+        'scipy':scipy.__version__,'pandas':pandas.__version__,'matplotlib':matplotlib.__version__,
+        'kind':'Executed from the published Python during the site build; separate from your browser execution.'},'lessons':result}
+    destination=Path(sys.argv[1]) if len(sys.argv)>1 else ROOT/'.cache/worked.json'
+    destination.parent.mkdir(parents=True,exist_ok=True)
+    destination.write_text(json.dumps(record))
+    print(f'Executed {len(result)} published Python examples; generated {sum(len(r["figures"]) for r in result.values())} figures.')
