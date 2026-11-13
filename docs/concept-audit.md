@@ -257,4 +257,3 @@ Keep one main outcome per lesson and the current quiet reading flow. Put essenti
 After content changes, verify that a learner can read, predict, make the requested change and answer the transfer question with optional panels closed. Re-run the repository's native, build/link and browser checks when course content or rendering changes. Check novice comprehension separately: this source/sequence audit is author review, not evidence of improved learning.
 
 **Validation for this review record:** all 79 lesson/workbook slugs are covered exactly once, plus the overview and field notes; relative report links and documentation whitespace were checked. No course source, generated site or deployment was changed. No execution suite was rerun for these documentation-only findings.
-
