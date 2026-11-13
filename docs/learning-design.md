@@ -11,3 +11,15 @@ Misconceptions addressed explicitly: a seed validates a model; more trials remov
 Evidence: all inputs identify invented or simulated provenance. Worked examples are generated from exact published Python; browser output appears only after execution. Primary method references appear per lesson. Capstone input validates CSV structure rather than real-world suitability. Reading marks are self-reported progress, not mastery. Author review and automated checks are not learner validation; no novice study has been conducted.
 
 UX baseline: retain the revised Scientific Method Lab's large readable type and single-column code/output flow on ordinary laptops. Give the Monte Carlo course its own simulation-led overview, clear core/advanced/workbook routes, accessible controls, visible execution states, editable error recovery, portable records and a phone contents menu. Review the route with optional panels closed before release.
+
+## Quiet presentation
+
+Keep the learning structure while reducing simultaneous scaffolding. Present one
+plain learning goal followed by explanation, a visible prediction question, the
+experiment and a transfer case. Recording the prediction and keeping field notes
+are optional disclosures; saved text reopens them on return. Progressive hints,
+worked examples and runtime tools stay available beside the relevant activity.
+Results appear after execution, with clear provenance and recoverable error/Stop
+states. Course modules are native disclosures; search opens matching modules and
+module deep links reveal their contents. Mathematical refreshers remain optional,
+readable disclosures where the course provides them.

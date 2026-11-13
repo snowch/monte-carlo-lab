@@ -3,13 +3,14 @@
 import contextlib, json, math, os, re, subprocess, sys, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from quiet_checks import check_quiet_layout
 ROOT=Path(__file__).resolve().parents[1]
 COURSE=json.loads((ROOT/'src/course.json').read_text())
 LESSONS=COURSE['lessons']
 ALL=LESSONS+COURSE['applications']
 CAPSTONE=next(l for l in LESSONS if l['capstone'])
 RESULTS=ROOT/'test-results';RESULTS.mkdir(exist_ok=True)
-BASE='http://127.0.0.1:5174/monte-carlo-lab/'
+BASE='http://127.0.0.1:5186/monte-carlo-lab/'
 
 def visit(page,url):
     page.goto(url)
@@ -20,11 +21,20 @@ def wait_result(page):
     status=page.locator('#status').inner_text()
     assert status.startswith('Completed'),status+'\n'+page.locator('#output').inner_text()
 
+def open_optional(page,identifier):
+    details=page.locator('#'+identifier)
+    if not details.evaluate('e=>e.open'):details.locator(':scope > summary').click()
+
+def restore_example(page):
+    open_optional(page,'editor-tools')
+    page.locator('#restore').click()
+
 def download(page,selector,path):
+    if selector=='#download-code':open_optional(page,'editor-tools')
     with page.expect_download() as info:page.locator(selector).click()
     info.value.save_as(path)
 
-server=subprocess.Popen([sys.executable,'-m','http.server','5174','--bind','127.0.0.1','--directory',str(ROOT/'.preview')],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+server=subprocess.Popen([sys.executable,'-m','http.server','5186','--bind','127.0.0.1','--directory',str(ROOT/'.preview')],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 try:
     import urllib.request
     for _ in range(50):
@@ -35,7 +45,7 @@ try:
         browser=p.chromium.launch(executable_path=None if os.environ.get('CI') else os.environ.get('CHROMIUM_PATH','/usr/bin/chromium'),headless=True,args=['--no-sandbox'])
         context=browser.new_context(viewport={'width':1440,'height':1000},accept_downloads=True)
         # No third-party request should be needed for fonts, code, plots or runtime.
-        context.route('**/*',lambda route:route.continue_() if route.request.url.startswith('http://127.0.0.1:5174/') or route.request.url.startswith('data:') else route.abort())
+        context.route('**/*',lambda route:route.continue_() if route.request.url.startswith('http://127.0.0.1:5186/') or route.request.url.startswith('data:') else route.abort())
         page=context.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         visit(page,BASE)
         assert page.locator('.lesson-row').count()==79
@@ -44,7 +54,10 @@ try:
         assert page.evaluate('getComputedStyle(document.documentElement).backgroundColor')=='rgb(247, 249, 252)'
         assert 'DM Sans' in page.evaluate('getComputedStyle(document.documentElement).fontFamily')
         assert 'Sora' in page.locator('h1').evaluate('(el)=>getComputedStyle(el).fontFamily')
+        assert not page.locator('#course-example').evaluate('e=>e.open')
+        open_optional(page,'course-example')
         assert '10,000' in page.locator('.model-inputs').inner_text()
+        page.locator('#course-example > summary').click()
         page.screenshot(path=str(RESULTS/'overview-desktop.png'),full_page=True)
         page.locator('#search').fill('confidence')
         assert 0<page.locator('.lesson-row:visible').count()<79
@@ -59,6 +72,10 @@ try:
         # namespace; this also checks isolation without paying 79 import costs.
         # Every actual page is checked independently below at narrow widths.
         visit(page,BASE+'lessons/'+LESSONS[0]['slug']+'.html')
+        assert not page.locator('#run-result').is_visible()
+        assert not page.locator('#stop').is_visible()
+        assert not page.locator('#export-run').is_visible()
+        assert page.locator('.outcome,.on-this-page,.mobile-course-bar').count()==0
         assert page.locator('.explanation p').first.evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')>=20
         assert page.locator('#code').evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')>=16
         assert page.locator('#output').evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')>=16
@@ -107,7 +124,7 @@ try:
         assert 'changed after this run' in report and csv.strip() in report
         print('PASS CSV and exact-source exports',flush=True)
         # Invalid CSV must fail visibly, then recover to starter input.
-        page.locator('#restore').click()
+        restore_example(page)
         page.locator('#csv-upload').set_input_files({'name':'bad.csv','mimeType':'text/csv','buffer':b'wrong,columns\n1,2\n'})
         page.wait_for_function("document.querySelector('#csv-status').textContent.includes('Selected bad.csv')")
         page.locator('#run').click()
@@ -124,8 +141,10 @@ try:
         assert 'deliberate test error' in page.locator('#output').inner_text()
         page.locator('#code').fill('while True: pass')
         page.locator('#run').click();page.wait_for_function("document.querySelector('#status').textContent==='Running your Python…'",timeout=30000)
+        assert page.locator('#stop').is_visible()
         page.locator('#stop').click();assert 'Stopped' in page.locator('#status').inner_text()
-        page.locator('#restore').click()
+        assert page.evaluate('document.activeElement.id')=='run'
+        restore_example(page)
         assert page.locator('#code-highlight code').text_content()==page.locator('#code').input_value()+'\n'
         page.locator('#run').click();wait_result(page)
         print('PASS CSV validation, error and Stop recovery',flush=True)
@@ -135,7 +154,9 @@ try:
         assert 'Reconsider' in page.locator('#quiz-feedback').inner_text()
         page.locator('input[name=answer][value="0"]').check();page.locator('#quiz button').click()
         assert 'reasoning fits' in page.locator('#quiz-feedback').inner_text()
+        open_optional(page,'prediction-notes')
         page.locator('#prediction').fill('My saved prediction')
+        open_optional(page,'lesson-notes')
         page.locator('#notes').fill('A note to preserve')
         page.locator('#code').fill(page.locator('#code').input_value()+'\n# saved draft')
         download(page,'#download-code',RESULTS/'downloaded.py')
@@ -205,7 +226,7 @@ try:
         assert second.locator('#notes').input_value()=='A note to preserve'
         print('PASS 200% text, menu and portable progress',flush=True)
         # Static reading does not need JS or any runtime assets.
-        reading=browser.new_context(java_script_enabled=False)
+        reading=browser.new_context(java_script_enabled=False,reduced_motion='reduce')
         static=reading.new_page();requests=[];static.on('request',lambda req:requests.append(req.url))
         for lesson in ALL:
             response=static.goto(BASE+'lessons/'+lesson['slug']+'.html')
@@ -215,6 +236,7 @@ try:
             assert static.locator('.worked pre').inner_text().strip()
         assert not any('/engine/' in url for url in requests)
         assert errors==[],errors
+        check_quiet_layout(browser,ROOT,BASE,LESSONS)
         browser.close()
         print('PASS: 79 real Wasm experiments; native numerical agreement; CSV validation and provenance; feedback; error and Stop recovery; drafts; portable exports; mobile 390/320px; both themes; JavaScript-free reading.',flush=True)
 finally:
