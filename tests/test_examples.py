@@ -86,6 +86,28 @@ class CourseTests(unittest.TestCase):
         self.assertEqual(changed['fraction'],.75)
         full,_=run(lesson,source.replace('seats = 2','seats = 3'))
         self.assertEqual(full['overflow_count'],0)
+    def test_inspectable_delays_expose_summary_response_to_one_tail_value(self):
+        ns=self.ns(4)
+        self.assertEqual(ns['delay'].mean(),4)
+        np.testing.assert_allclose(np.quantile(ns['delay'],[.5,.9]),[3,6])
+        lesson=LESSONS[3]
+        source=(ROOT/'python'/lesson['code']).read_text()
+        changed,_=run(lesson,source.replace('5, 15]','5, 30]'))
+        self.assertEqual(changed['delay'].mean(),5.5)
+        np.testing.assert_allclose(np.quantile(changed['delay'],[.5,.9]),[3,7.5])
+    def test_scalar_normal_construction_preserves_marginals_and_target_link(self):
+        lesson=LESSONS[27];source=(ROOT/'python'/lesson['code']).read_text()
+        for rho in [.7,0,-.7]:
+            ns,_=run(lesson,source.replace('rho = .7',f'rho = {rho}'))
+            np.testing.assert_allclose(ns['paired'].mean(axis=0),[0,0],atol=.035)
+            np.testing.assert_allclose(ns['paired'].var(axis=0),[1,1],atol=.05)
+            self.assertAlmostEqual(np.corrcoef(ns['paired'].T)[0,1],rho,delta=.025)
+            self.assertAlmostEqual((ns['cost_a']+ns['cost_b']).var(),164+160*rho,delta=7)
+        with self.assertRaises(AssertionError):run(lesson,source.replace('rho = .7','rho = 1.4'))
+    def test_lag_calculation_matches_the_stationary_ar_reference(self):
+        ns=self.ns(74)
+        np.testing.assert_allclose(ns['acf'][1:4],[.9,.81,.729],atol=.035)
+        self.assertAlmostEqual(ns['ess']/ns['n'],1/19,delta=.025)
     def test_attendance_matches_exact_probability_with_sampling_error(self):
         ns=self.ns(1)
         exact=stats.binom.sf(110,150,.72)

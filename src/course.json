@@ -6,7 +6,7 @@
     "short": "Read a chance, an independence assumption and a complete-event trial.",
     "goal": "Read the first attendance model in plain language.",
     "explain": [
-      "Probability is a number from 0 to 1 describing chance under a model: 0 means impossible and 1 means certain. A chance of 0.72 is 72 out of 100, or 72%. Across many comparable occasions, the attendance fraction should tend towards that chance under the model; exactly 72 of every 100 guests need not attend. Lesson 1 assumes this chance for teaching. It is not a measured attendance rate.",
+      "Probability is a number from 0 to 1 describing chance under a model: an impossible event has probability 0 and a certain event has probability 1. A chance of 0.72 is 72 out of 100, or 72%. Across many comparable occasions, the attendance fraction should tend towards that chance under the model; exactly 72 of every 100 guests need not attend. Lesson 1 assumes this chance for teaching. It is not a measured attendance rate.",
       "Independent attendance means that learning whether one guest attends does not change another guest’s chance in the model. Several guests can still attend together. Friends travelling together could break that assumption: knowing one is coming may tell you about the other. Independence is a modelling choice to check, not a property guaranteed by sending separate invitations.",
       "For room overflow, one trial must contain the whole event, including every guest decision. Count attendees, then ask whether the count is greater than the seats. Exactly full still fits. A fraction is a part divided by a total: one overflow among four events is 1/4 = 0.25 = 25%. Below, 1 means attends and 0 means absent. Sum adds those guest decisions. These four hand-picked events illustrate counting; they are not random draws from the 72% model."
     ],
@@ -107,8 +107,8 @@
       "goal": "Estimate the probability that attendance exceeds a room’s capacity.",
       "explain": [
         "An organiser has invited 150 people to a room with 110 seats. Suppose each guest has a 0.72 (72%) chance of attending. Assume independent attendance: learning one guest’s decision does not change another guest’s chance. This is an explicit teaching model, not a measured attendance rate. A simulation generates possible events under those assumptions.",
-        "One trial is one complete event: draw who attends, count them and compare the count with the seats. Repeating that procedure produces a distribution of possible attendance. A probability estimate is the fraction of trials satisfying a stated condition, here attendance greater than 110.",
-        "NumPy’s binomial generator counts yes/no successes among a fixed number of opportunities. Here those opportunities are the individual guests; one complete Monte Carlo trial is still the whole event. The arguments are invitation count, guest attendance chance and number of simulated events. The seed makes this particular run repeatable. Your estimate describes the model; checking whether its assumptions describe real guests is a separate task."
+        "One trial is one complete event: draw who attends, count them and compare the count with the seats. Repeating produces a distribution, the possible counts and how often they occur. A boolean is a True/False decision; NumPy counts True as 1 and False as 0. Averaging the overflow decisions therefore gives the fraction of whole events with attendance greater than 110.",
+        "NumPy is a Python library for array calculations. Its binomial generator counts yes/no successes among a fixed number of opportunities. Here those opportunities are the individual guests; one complete Monte Carlo trial is still the whole event. The arguments are invitation count, guest attendance chance and number of simulated events. The seed makes this particular run repeatable. Your estimate describes the model; checking whether its assumptions describe real guests is a separate task."
       ],
       "predict": "Will raising the seat count change attendance, or only the overflow condition?",
       "look": "The comparison is strictly greater than the capacity. Exactly 110 guests fit in 110 seats. The boolean array contains one overflow decision per simulated event: True counts as 1 and False as 0, so its mean is the fraction of events that overflow.",
@@ -135,7 +135,8 @@
       "module": 0,
       "code": "01-will-the-room-be-full.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "In the reference, X is attendance, c is the seat count, k counts overflow events and n counts complete simulated events. The hat on P marks an estimated probability."
     },
     {
       "slug": "what-counts-as-one-trial",
@@ -143,13 +144,13 @@
       "short": "Identify the simulated unit and retain all outcomes belonging to it.",
       "goal": "Identify the simulated unit and retain all outcomes belonging to it.",
       "explain": [
-        "A trial must represent one complete outcome relevant to the question. If the question concerns an event overflowing, individual guests are ingredients in a trial; they are not separate observations of whether the room overflowed.",
-        "Build a small matrix with one row per event and one column per guest. Comparing uniform random numbers with an attendance probability produces yes/no decisions. A uniform draw lies between zero and one; a threshold of 0.6 makes attendance occur with probability 0.6 under this generator.",
-        "Summing across columns gives attendance for each event. Averaging the entire matrix instead estimates the attendance rate of a guest. Both calculations are meaningful, but their targets differ. Keep the axis, units and trial definition attached to every summary."
+        "A trial contains one complete outcome for the question. A NumPy array stores values in a numbered arrangement and applies arithmetic to its entries. A two-dimensional array is a matrix: rows and columns. Here one row is one event and one column is one guest. Individual guests are ingredients, not separate observations of overflow.",
+        "Inspect the invented two-event example first: [[1,0,1],[0,1,0]]. Its shape (2,3) means two rows and three columns. Summing with axis=1 works across each row, giving attendance [2,1]. With axis=0 it works down the rows, giving guest-column totals [1,1,1]. Each 1 means attends; each 0 means absent. The code prints both calculations before generating more events.",
+        "A uniform random draw on [0,1) gives equally likely intervals of equal width: a draw below 0.6 occurs with chance 0.6. Comparing draws with that threshold gives boolean attendance decisions. Summarise each row before testing overflow. Averaging every cell instead estimates a guest attendance fraction. Later, x[:,0] selects every row of column 0; x[:3] selects the first three rows. Python starts numbering at zero."
       ],
       "predict": "Does averaging individual guest decisions estimate the probability of an event overflowing?",
-      "look": "The two fractions answer different questions. Six events also provide very little precision for estimating overflow.",
-      "change": "Change the matrix to (10000, 8). Keep each event’s guests together when calculating overflow.",
+      "look": "Read the shape and axis before summarising. Array arithmetic acts entry by entry: counts > 5 makes one True/False decision per event. Six events provide very little precision for estimating overflow.",
+      "change": "Change the random-draw shape `(6, 8)` to `(10000, 8)`. Keep the tiny invented example unchanged and each event’s guests together when calculating overflow.",
       "question": "For a five-task project, which object should one deadline trial contain?",
       "options": [
         "One arbitrarily selected task.",
@@ -180,9 +181,9 @@
       "short": "Build a repeated simulation without mixing inputs from different trials.",
       "goal": "Build a repeated simulation without mixing inputs from different trials.",
       "explain": [
-        "A Monte Carlo estimate averages a quantity calculated from random inputs. That quantity might be an overflow indicator, a cost or a completion time. First define how to compute it for one trial, then repeat that exact rule.",
-        "Here the target is the profit of a small event. Every trial has attendance, revenue from those attendees and a fixed venue cost. The resulting profit belongs to that trial. The arithmetic acts element by element, so each attendance count stays attached to its revenue.",
-        "The sample mean adds all trial profits and divides by trial count. The loss probability averages the indicator profit below zero. Neither statistic substitutes for the full range of possible outcomes. A positive expected profit can coexist with a substantial probability of a loss."
+        "A Monte Carlo estimate averages a quantity calculated from random inputs. First define it for one complete trial, then repeat that rule. An indicator is 1 when a condition holds and 0 otherwise; averaging a loss indicator estimates the chance of a loss.",
+        "Here each event has attendance, ticket revenue and a fixed venue cost. Profit is revenue minus cost. NumPy applies the arithmetic entry by entry, keeping each count attached to its revenue. A sample mean adds all profits and divides by the number of events. Its target, expectation, is the average weighted by the model's outcome probabilities.",
+        "The code also reports percentiles: P10 and P90 are cutoffs with roughly 10% and 90% of outcomes at or below them. P50 is the median, the middle of the ordered outcomes. Finite-sample cutoffs may interpolate between values; the next lesson makes that visible. A positive expected profit can coexist with a substantial loss chance, so inspect both."
       ],
       "predict": "Can an event have positive average profit and still lose money in some trials?",
       "look": "Expected profit and loss probability describe different aspects of the same trial distribution.",
@@ -209,7 +210,8 @@
       "module": 0,
       "code": "03-repeat-the-whole-experiment.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "In the illustration, $\\Pi$ denotes profit, E means model expectation and P means probability. $P(\\Pi<0)$ reads ‘the chance that profit is negative’."
     },
     {
       "slug": "see-the-outcomes-before-the-headline",
@@ -217,13 +219,13 @@
       "short": "Read an outcome distribution and distinguish quantiles from a mean.",
       "goal": "Read an outcome distribution and distinguish quantiles from a mean.",
       "explain": [
-        "A histogram groups values into intervals and counts how many fall in each. Its shape can reveal asymmetry and tails hidden by one average. A quantile marks a value below which a stated fraction of outcomes lies, with interpolation conventions at finite sample sizes.",
-        "The simulation below creates a positive, skewed delivery delay. NumPy’s lognormal generator exponentiates a normal draw; its mean and sigma arguments describe that underlying normal variable, not the final delay’s arithmetic mean and standard deviation.",
-        "The median is the 50th percentile. P90 is the 90th percentile: roughly 90% of simulated delays fall at or below it. These are outcome summaries, not confidence limits for a population mean. The later error module examines uncertainty in the numerical estimates themselves."
+        "A histogram groups values into bins, intervals whose bar heights count observations. The ten delivery delays below are invented values in days. Most are small, with one large delay: a long right tail. We can learn to summarise that shape without first choosing a random-input distribution.",
+        "The mean is total delay divided by ten. The median, or P50, is the middle of the sorted values; here the fifth and sixth values are both 3 days. A quantile is a cutoff for a stated fraction. P90 means roughly 90% of outcomes are at or below the cutoff.",
+        "NumPy's default linear interpolation puts P90 one tenth of the way from the ninth value, 5, to the tenth, 15: 6 days. That cutoff need not be an observed delay. These percentiles describe the supplied outcomes, not uncertainty about an estimated mean. Keep the raw values beside the picture because changing bins can change its appearance."
       ],
       "predict": "For a right-skewed distribution, must the mean equal the median?",
-      "look": "The long right tail can lift the mean above the median. Bin choices affect the picture, so retain raw values and numerical summaries.",
-      "change": "Increase sigma to 1.0. Compare the median, mean and P90.",
+      "look": "The large delay lifts the mean above the median. The published P90 is 6 days by interpolation; nine of the ten supplied delays are at or below it.",
+      "change": "Change the largest invented delay from 15 to 30 days. Predict what happens to the mean, median and P90, then run.",
       "question": "P90 delivery time is eight days. What does that describe?",
       "options": [
         "A percentile of the modelled delivery-time outcomes.",
@@ -236,13 +238,13 @@
         "Name whether the quantity concerns outcomes or an estimated average.",
         "Think about the upper 10% of outcomes."
       ],
-      "limit": "The lognormal shape and its parameters are authored assumptions. Extreme quantiles need more tail information than central summaries.",
+      "limit": "These ten delays are invented examples, not measured data or random draws. They illustrate summaries; they do not establish a delivery-delay model or a reliable future tail.",
       "source": [
         "NumPy 2.0 · Random Generator",
         "https://numpy.org/doc/2.0/reference/random/generator.html"
       ],
       "minutes": 7,
-      "kind": "Seeded teaching simulation",
+      "kind": "Ten invented delivery delays · inspectable summaries",
       "module": 0,
       "code": "04-see-the-outcomes-before-the-headline.py",
       "track": "core",
@@ -256,7 +258,7 @@
       "explain": [
         "A pseudo-random generator produces a deterministic sequence from an initial state. A seed makes that state reproducible. Record the generator, package version, seed and draw order when you need someone else to recreate a calculation.",
         "Two generators initialised with the same seed produce the same sequence under the same implementation. They are useful for replaying an experiment, but are not independent replications. Changing the sequence of calls changes which draws enter each calculation.",
-        "A fresh seed can reveal numerical variation under the same model. It cannot reveal assumptions omitted from that model. For parallel work, independent child streams provide a principled alternative to repeatedly reusing one seed; the reproducibility module returns to that design."
+        "A fresh seed can reveal numerical variation under the same model. It cannot reveal assumptions omitted from that model. For parallel work, independent child streams, separate pseudo-random sequences, provide a principled alternative to repeatedly reusing one seed; the reproducibility module returns to that design."
       ],
       "predict": "Do two generators with the same seed provide two independent sets of evidence?",
       "look": "The replay establishes computational reproducibility for this procedure. It does not add another independent estimate.",
@@ -292,7 +294,7 @@
       "goal": "Use a tractable case to challenge a simulation’s implementation.",
       "explain": [
         "When an exact answer is available, it is a valuable reference. Return to the room model: independent attendance with a fixed probability gives an exact binomial distribution for the attendance count.",
-        "SciPy’s survival function sf(k) gives the probability of a value strictly greater than k. That boundary matches the simulation’s attendance > seats condition. Using 1 minus a cumulative probability can be numerically fragile for very small tails; the survival function is designed for the tail calculation.",
+        "A cumulative probability counts values at or below a threshold, P(X ≤ k). Its complement is the upper tail, the chance above k. SciPy's survival function sf(k) calculates that strict upper tail directly, matching attendance > seats. Direct tail calculation avoids loss of numerical accuracy when a very small answer is obtained by subtracting almost-equal numbers.",
         "The simulation estimate will usually differ from the exact model probability because it uses finitely many trials. A discrepancy should be judged against Monte Carlo error, not an expectation of identical decimal strings. Agreement supports this implementation for this model, not the assumption that real attendance is independent."
       ],
       "predict": "Should a finite simulation match the exact probability to every displayed decimal?",
@@ -320,7 +322,8 @@
       "module": 0,
       "code": "06-check-against-an-exact-answer.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "The model probability p is the exact reference; the estimate with a hat uses finitely many complete events. Run-to-run numerical error is the variation in that estimate over fresh simulations; lesson 15 quantifies it."
     },
     {
       "slug": "sample-weighted-alternatives",
@@ -328,8 +331,8 @@
       "short": "Generate categorical choices with explicit probabilities.",
       "goal": "Generate categorical choices with explicit probabilities.",
       "explain": [
-        "Some inputs are categories rather than continuous measurements. A visitor might choose a standard, vegetarian or premium meal. Represent the categories and their probabilities together so their meaning stays inspectable.",
-        "The probabilities must be nonnegative and sum to one. NumPy choice samples from the alternatives using those weights. The sample frequencies will fluctuate around the stated probabilities; they are not required to reproduce them exactly in one batch.",
+        "Some inputs are categories rather than continuous measurements. A visitor might choose a standard, vegetarian or premium meal. Represent the categories and their probabilities together so their meaning stays inspectable. Mutually exclusive means one visitor cannot belong to two meal categories here; we also assume every visitor chooses one.",
+        "The probabilities must be nonnegative and sum to one. NumPy choice samples from the alternatives using those weights. The sample frequencies will fluctuate around the stated probabilities; they are not required to reproduce them exactly in one batch. Relative weights are different: [5,3,2] become [.5,.3,.2] by dividing by their total 10, but only if they really mean relative frequencies.",
         "A category can select another calculation, such as ingredient cost. Averaging those costs estimates the expected cost under the assumed mix. This preserves the distinction between a category label and the numerical outcome it produces."
       ],
       "predict": "Will a sample of ten meals necessarily contain exactly three vegetarian meals if their probability is 0.3?",
@@ -366,8 +369,8 @@
       "goal": "Recognise when a binomial model fits a fixed set of independent opportunities.",
       "explain": [
         "A binomial count is the number of successes among a fixed number of independent opportunities, each with the same success probability. Its support is the integers from zero to the opportunity count.",
-        "This model suits a teaching example of thirty independent components each passing a check with probability 0.95. It is not a model for arbitrary arrival counts over time: those need a different specification. Group-level variation can also make the independence or common-probability assumptions implausible.",
-        "The expected count is n times p. Its variance is n times p times one minus p. Variance is the average squared deviation from the mean; a standard deviation is its square root. Compare the simulated summaries with these model quantities."
+        "The expected count is n times p. Variance is the model's average squared distance from that mean; standard deviation (SD) is its square root, back in count units. For this binomial model the variance is n times p times (1-p). Probability mass means the probability assigned to one possible integer count.",
+        "The example assumes thirty independent components each passing with probability 0.95. Compare sample summaries with the known model mean and variance. A sample variance estimates model variance from finitely many draws and uses ddof=1 to account for estimating their mean. Arbitrary time arrivals or group-linked outcomes need a different model."
       ],
       "predict": "Can this model ever generate more successes than the number of opportunities?",
       "look": "The bounded integer support is part of the model. The sample variance uses `ddof=1` to estimate population variance from independent draws.",
@@ -394,7 +397,8 @@
       "module": 1,
       "code": "08-count-successes-in-a-fixed-group.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "X is the success count, n is the fixed opportunity count and p is the common success chance. The symbol ~ reads ‘is drawn from’ the named distribution."
     },
     {
       "slug": "count-arrivals-in-an-interval",
@@ -402,7 +406,7 @@
       "short": "Use a Poisson model with an explicitly scaled observation interval.",
       "goal": "Use a Poisson model with an explicitly scaled observation interval.",
       "explain": [
-        "A Poisson count takes nonnegative integer values and has no fixed upper limit. A homogeneous Poisson-process model uses a constant event rate with independent increments over disjoint intervals.",
+        "A Poisson count takes nonnegative integer values with no fixed upper limit. A homogeneous process has a constant event rate. Independent increments means counts in non-overlapping time intervals do not inform each other under the model; for example, the first half-hour's count does not change the next half-hour's distribution.",
         "If the rate is four requests per hour, the expected count in half an hour is two. NumPy poisson takes that expected count, not a rate with unspecified units. Keep the duration conversion visible in the model.",
         "Under this model the count variance equals its mean. Real observations with bursts, seasonality or shared causes may have more variation. Comparing empirical mean and variance is a useful diagnostic, although matching them would not prove the whole model."
       ],
@@ -431,7 +435,8 @@
       "module": 1,
       "code": "09-count-arrivals-in-an-interval.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\lambda_{\\rm window}$ is the expected number of arrivals in the chosen window; probability mass is the chance of each integer count."
     },
     {
       "slug": "wait-for-the-next-event",
@@ -441,7 +446,7 @@
       "explain": [
         "An exponential waiting time is nonnegative and right-skewed. For a homogeneous Poisson process of rate lambda, the waiting time to the next event has mean one divided by lambda.",
         "NumPy’s exponential generator takes that mean scale. Passing the rate directly would invert the intended behaviour: increasing a rate should shorten waits. Use compatible time units when taking the reciprocal.",
-        "The model is memoryless: conditional on having already waited, the remaining wait has the same distribution. This can be useful for simple arrival or failure models, but is unsuitable when ageing or scheduling changes the event hazard. The empirical conditional comparison below illustrates, rather than proves, that property."
+        "The model is memoryless: conditional on having already waited, the remaining wait has the same distribution. This can be useful for simple arrival or failure models, but is unsuitable when ageing or scheduling changes the event hazard. The empirical conditional comparison below illustrates, rather than proves, that property. Hazard means the event rate conditional on still waiting; it stays constant in this exponential model."
       ],
       "predict": "Should increasing the arrival rate make the average wait longer or shorter?",
       "look": "The two empirical means need not be identical. The conditional subset is smaller and has more sampling error.",
@@ -468,7 +473,8 @@
       "module": 1,
       "code": "10-wait-for-the-next-event.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "T is waiting time, $\\lambda$ is the event rate per time unit and E[T] is the model's mean wait."
     },
     {
       "slug": "model-symmetric-variation",
@@ -476,9 +482,9 @@
       "short": "Check the support and spread of a normal input model.",
       "goal": "Check the support and spread of a normal input model.",
       "explain": [
-        "A normal distribution is symmetric around its mean and is specified by a mean and a standard deviation. It can produce any real value, including negatives. That support matters when modelling durations, sizes or costs.",
-        "For a sensor error centred on zero, negative and positive draws are meaningful. For a small positive duration with large relative variation, negative draws could instead reveal an inappropriate model. Clipping them to zero creates a different distribution with a point mass at zero.",
-        "Simulate normal sensor errors and add them to a fixed reference. The sampled standard deviation describes individual errors. Later, the Monte Carlo standard error will describe uncertainty in an estimate calculated from many draws."
+        "A normal distribution is a symmetric bell-shaped model, specified by mean μ and standard deviation σ. The notation N(μ,σ²) lists its mean and variance; NumPy's scale argument takes σ, not σ². Its possible values include every real number, including negatives.",
+        "The curve is a density: probability comes from area over an interval, not the height at one point. The whole area is one; a single exact value has zero probability in this continuous model. For zero-centred sensor errors, negative and positive values make sense. For a duration, negative values may make the model unsuitable.",
+        "The example adds sensor errors with SD 2 to a fixed reference. Clipping negative durations to zero would change their model by piling probability at exactly zero, a point mass. Check what the quantity can mean before selecting a familiar curve. Outcome SD describes individual errors; later MCSE describes numerical uncertainty in a summary."
       ],
       "predict": "Will a normal distribution with a positive mean always generate positive values?",
       "look": "A familiar bell shape does not make a model suitable for every quantity. Check its support against the meaning of the input.",
@@ -505,7 +511,8 @@
       "module": 1,
       "code": "11-model-symmetric-variation.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "In this picture E is the sensor error, not the expectation operator. N(0,2²) has mean 0, variance 4 and SD 2."
     },
     {
       "slug": "keep-positive-quantities-positive",
@@ -513,9 +520,9 @@
       "short": "Interpret lognormal parameters on their underlying log scale.",
       "goal": "Interpret lognormal parameters on their underlying log scale.",
       "explain": [
-        "A lognormal variable is the exponential of a normal variable, so every draw is positive. It can represent multiplicative variation and right-skewed positive outcomes when the mechanism supports that choice.",
-        "For a lognormal model, the logarithm has normal mean $\\mu$ and standard deviation $\\sigma$. The outcome median is $e^\\mu$, while its arithmetic mean is $e^{\\mu+\\sigma^2/2}$. These parameters live on the log scale: the log standard deviation is not the standard deviation of the positive outcome.",
-        "These distinctions matter when translating someone’s estimate into code. Asking for an average cost and passing that cost directly as the generator’s mean parameter would usually create a radically different distribution. Write down whether an estimate is on the original or logarithmic scale."
+        "The exponential function exp(z), also written e to the power z, is positive. Here e is approximately 2.718. Its inverse is the natural logarithm log: exp(log(10))=10 and log(exp(2))=2. Logs turn multiplication into addition. A lognormal draw is exp(Z) for a normal draw Z, so it stays positive.",
+        "For lognormal X, log(X) has normal mean $\\mu$ and SD $\\sigma$. Its median is $e^\\mu$ and its mean is $e^{\\mu+\\sigma^2/2}$. With log mean log(10) and log SD 0.7, the median is 10 while the mean is about 12.78. These are log-scale parameters, not the positive outcome's arithmetic mean and SD.",
+        "Multiplicative variation can support a lognormal model when the mechanism and evidence fit. Passing an average cost directly as the generator's mean usually gives a very different distribution: a desired median 10 needs log_mean=log(10). Increasing log_sd spreads the positive outcomes without changing that model median. The distribution has no finite upper bound."
       ],
       "predict": "If the log-scale mean stays fixed and sigma increases, does the arithmetic mean stay fixed?",
       "look": "Positive support does not establish that a lognormal shape fits the domain. Compare its quantiles with evidence.",
@@ -579,7 +586,8 @@
       "module": 2,
       "code": "13-two-different-kinds-of-spread.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\bar X$ is a mean across n independent outcomes and σ is their model SD; its mean's SD is σ divided by sqrt(n)."
     },
     {
       "slug": "watch-convergence-without-promising-a-winner",
@@ -587,7 +595,7 @@
       "short": "Recognise the typical square-root relationship between independent trial count and numerical error.",
       "goal": "Recognise the typical square-root relationship between independent trial count and numerical error.",
       "explain": [
-        "For independent identically distributed draws with finite variance, the sample mean approaches the model expectation as the sample grows. This law-of-large-numbers statement does not say that every additional draw moves the estimate closer to the answer.",
+        "For independent identically distributed draws with finite variance, the sample mean approaches the model expectation as the sample grows. This law-of-large-numbers statement does not say that every additional draw moves the estimate closer to the answer. The abbreviation i.i.d. means independent and identically distributed. Identically distributed means every draw uses the same model. Finite variance means its average squared deviation has a finite value, the condition used by the error rule below.",
         "The standard deviation of the sample mean is the outcome standard deviation divided by the square root of n. Four times as many draws therefore halves that standard deviation under the same model. It is a statement about repeated experiments, not a guarantee for one running trace.",
         "Here the exact expectation of U squared for U uniform between zero and one is one third. The trace and repeated-batch error calculation let you inspect both convergence and its irregularity. Rare outcomes and heavy tails can make this simple picture difficult or invalid."
       ],
@@ -616,7 +624,8 @@
       "module": 2,
       "code": "14-watch-convergence-without-promising-a-winner.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\overline{U^2}$ means average the squared uniform draws; n is their count. SE denotes the model standard deviation of that average across repeated runs."
     },
     {
       "slug": "calculate-monte-carlo-standard-error",
@@ -631,7 +640,7 @@
       "predict": "Should the MCSE have squared units or the same units as the outcome?",
       "look": "The estimated MCSE fluctuates because it uses a finite sample SD. It should be in the same broad range as the independent-batch and model calculations.",
       "change": "Replace `n=2000` with `n=8000`. Compare the observed change with the square-root prediction.",
-      "question": "Your draws come from a slowly moving Markov chain. Can you automatically use $s/\\sqrt{n}$ with the raw draw count?",
+      "question": "Your draws come from a slowly moving sequence of dependent draws. Can you automatically use $s/\\sqrt{n}$ with the raw draw count?",
       "options": [
         "No; dependence changes the variance of the estimator.",
         "Yes; every array is independent by definition.",
@@ -653,7 +662,8 @@
       "module": 2,
       "code": "15-calculate-monte-carlo-standard-error.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$Y_i$ is outcome i; $\\bar Y$ is their sample mean. $\\sum_i$ means add all the indexed outcomes. $s_Y$ is sample SD and n is the number of independent trials."
     },
     {
       "slug": "an-interval-for-a-simulated-mean",
@@ -661,9 +671,9 @@
       "short": "Construct an approximate confidence interval for a model expectation.",
       "goal": "Construct an approximate confidence interval for a model expectation.",
       "explain": [
-        "An interval for an expectation addresses numerical uncertainty in the estimated mean. It does not describe where most individual outcomes fall. A confidence procedure aims for a stated repeated-simulation coverage rate under its assumptions.",
-        "For independent draws with finite variance, a normal approximation gives mean plus or minus a critical value times MCSE. We use SciPy’s normal quantile 1.96 approximately for a two-sided 95% interval. The approximation needs a sampling distribution of the mean that is sufficiently close to normal.",
-        "A skewed outcome distribution can still yield a useful large-sample approximation for its mean, but that is not automatic for a tiny sample or an extreme tail. In the exponential model below, the true expectation is known. Inspect it alongside the interval and the much wider outcome percentiles."
+        "An interval for an expectation describes numerical uncertainty about a fixed model mean, not the range of individual outcomes. Coverage refers to repeated independent simulations: if each run constructs a 95% confidence interval, about 95% should contain that same fixed mean when the method's assumptions hold. One interval can miss it.",
+        "For independent finite-variance draws whose sample mean is approximately normal, use mean ± critical value × MCSE. A two-sided 95% interval leaves 5% outside: 2.5% in each tail. The normal 97.5th percentile, stats.norm.ppf(.975), is about 1.96; symmetry supplies the lower endpoint.",
+        "The normal approximation can work for the mean of many skewed outcomes, but is not automatic for tiny samples or poorly explored tails. The exponential model has a known expectation to check. Compare the short interval for that expectation with the central 95% of individual waits. More draws narrow numerical error, not the underlying wait distribution."
       ],
       "predict": "Should a 95% interval for the expectation contain 95% of the individual waits?",
       "look": "The interval and outcome percentiles target different quantities. The known expectation can miss an individual interval even when the procedure is working as intended.",
@@ -690,7 +700,8 @@
       "module": 2,
       "code": "16-an-interval-for-a-simulated-mean.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\bar Y$ is the estimated mean, $s_Y$ is outcome sample SD and n is the independent draw count; ± means form a lower and an upper endpoint."
     },
     {
       "slug": "when-zero-failures-is-not-zero-risk",
@@ -698,9 +709,9 @@
       "short": "Report probability uncertainty without treating an unobserved event as impossible.",
       "goal": "Report probability uncertainty without treating an unobserved event as impossible.",
       "explain": [
-        "For a simulated yes/no event, count the successes and divide by the number of independent trials. The plug-in standard error sqrt(`p_hat` times one minus `p_hat` divided by n) collapses to zero when no successes appear. That does not establish that the model probability is zero.",
-        "For an independently simulated yes/no event, count successes and use a binomial model to quantify probability uncertainty. The plug-in standard error $\\sqrt{\\widehat p(1-\\widehat p)/n}$ collapses to zero when no events occur. That calculation is not evidence that the event is impossible.",
-        "With zero observed failures, a one-sided 95% upper bound is 1 minus 0.05 to the power one over n. This differs from the upper end of a two-sided 95% interval because the tail allocation differs. State which convention you report."
+        "For independent yes/no trials, estimate event probability by event count divided by n. The plug-in standard error $\\sqrt{\\widehat p(1-\\widehat p)/n}$ inserts that estimated fraction. With no observed failures it becomes zero, even though a rare model event may simply have been missed.",
+        "An exact binomial confidence interval uses binomial tails instead of this normal approximation. SciPy's `binomtest` returns a test record; call its `proportion_ci` method with `method=\"exact\"` for a two-sided interval. Across repetitions, coverage is at least the stated level for independent trials with one common probability. Exact refers to that model calculation, not certainty about reality.",
+        "Two-sided 95% allocates 2.5% to each tail. A one-sided 95% upper bound allocates 5% to the lower-count tail: the probability of seeing zero failures at that upper probability is 0.05. With zero among n trials, solving (1-p)^n=0.05 gives upper bound 1−0.05^(1/n). The two conventions therefore have different upper limits."
       ],
       "predict": "Can a finite run with zero failures rule out all positive failure probabilities?",
       "look": "The zero plug-in error estimate is not useful evidence of impossibility. The positive upper bounds quantify what the finite observation leaves unresolved under the binomial model.",
@@ -735,8 +746,8 @@
       "short": "Choose an independent-run budget for a stated numerical precision goal.",
       "goal": "Choose an independent-run budget for a stated numerical precision goal.",
       "explain": [
-        "A simulation budget should follow the target quantity and required numerical precision. For a bounded yes/no outcome, the Bernoulli variance p times one minus p is at most one quarter. That supplies a conservative planning calculation for an approximate normal interval’s half-width.",
-        "For a 95% normal approximation with half-width epsilon, the worst-case planning count is the ceiling of z squared times 0.25 divided by epsilon squared. This is a planning approximation, not an exact coverage guarantee. Small probabilities can call for a more specialised design.",
+        "Plan simulation count from the target and needed numerical precision. A Bernoulli outcome is one yes/no value, coded 1 or 0. Its variance p(1-p) is at most 0.25. That worst case gives a conservative planning count for the half-width h, the distance from an estimated probability to one endpoint of an approximate normal interval.",
+        "For two-sided 95%, z is about 1.96. Plan n by rounding z²×0.25/h² up to the next integer; ceiling means round up. In code half_width is h. Halving h needs about four times the draws. For a mean instead of a probability, replace 0.25 with a supplied outcome variance s².",
         "Fix the count before examining the result, or use a sequential method built to support stopping. Repeatedly checking an ordinary fixed-count interval and stopping when a preferred conclusion appears changes the procedure. Keep numerical precision goals separate from the practical threshold of a decision."
       ],
       "predict": "How does the planned count change if you halve the desired half-width?",
@@ -810,8 +821,8 @@
       "goal": "Use empirical resampling while recognising what the sample cannot contain.",
       "explain": [
         "An empirical distribution assigns probability to the observed values. Sampling those values with replacement is a simple way to propagate a recorded sample into a simulation without fitting a smooth distribution.",
-        "The example uses invented daily demand observations. Resampling one day per trial assumes those days are representative and exchangeable for the future question. Replacing each draw allows repeated use of the same observation, which is part of this empirical model.",
-        "The resampled model cannot produce a value beyond the observed range. A short record with no extreme days therefore cannot establish that extreme future demand is impossible. Seasonality, trends and serial dependence may also require blocks, covariates or an explicitly different model."
+        "The example uses invented daily demand observations. They are assumed representative and exchangeable: each selected day can play the same role for the future question, so its position in the list is irrelevant. Sampling with replacement makes each selected value available again; one observation can appear several times.",
+        "The empirical model cannot draw beyond the observed range. Many resamples cannot establish that unobserved extremes are impossible. For seasonality or linked days, a different model may resample whole consecutive groups of days or account explicitly for day type. Those extensions need their own evidence."
       ],
       "predict": "Can this empirical generator produce a demand larger than its largest input observation?",
       "look": "The support is inherited from the input sample. A precise simulated fraction is conditional on that empirical distribution.",
@@ -847,7 +858,7 @@
       "goal": "Fit a positive distribution and compare its quantiles with the input evidence.",
       "explain": [
         "A fitted distribution estimates parameters from observations. It can interpolate between observed values and extrapolate beyond them, but its shape is another assumption. Parameter fitting does not establish that the distribution is suitable.",
-        "Fit a lognormal model to invented positive waiting times. Fixing `loc=0` makes this a positive-support, two-parameter lognormal model. SciPy returns a shape parameter, a location and a scale; these are not the same argument names used by NumPy’s generator.",
+        "Fit a lognormal model to invented positive waits with loc=0. SciPy's shape is the SD of log(wait), and scale is exp(the mean of log(wait)); loc shifts the whole distribution. For NumPy's earlier generator this means SciPy shape=log_sd and scale=exp(log_mean). For example, log_mean=log(10) and log_sd=.7 correspond to shape=.7, loc=0, scale=10.",
         "Compare empirical and fitted quantiles before using the fitted tail in a decision. A reasonably matching centre does not guarantee a matching tail. With a small sample, both fit assessment and parameter estimates are uncertain, so retain the observations and show sensitivity to plausible alternatives."
       ],
       "predict": "Does a successful fit call establish that the fitted tail is realistic?",
@@ -875,7 +886,8 @@
       "module": 3,
       "code": "21-fit-a-shape-and-inspect-the-fit.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\widehat\\theta$ means fitted parameters; the hat marks an estimate from the finite observations."
     },
     {
       "slug": "turn-an-expert-estimate-into-a-model",
@@ -885,7 +897,7 @@
       "explain": [
         "When data are sparse, people often provide a plausible minimum, most likely value and maximum. A triangular distribution is one transparent way to encode that particular shape assumption. Its bounded support and linear sides are choices, not consequences of asking an expert.",
         "The mode is the peak of the density, not generally the median or mean. For a triangular model the mean is the sum of the three parameters divided by three. Hard bounds are strong claims: if the proposed maximum is merely a high percentile, treating it as an absolute bound excludes outcomes the expert may have intended to allow.",
-        "Use the model as an inspectable scenario and compare alternative assumptions. Record who supplied the estimates, their meaning and what evidence would change them. A precise simulation of an elicited distribution cannot establish that the expert’s uncertainty was calibrated."
+        "Treat the expert-supplied shape as a scenario and compare alternatives. Elicitation means asking for and recording those judgements; calibration means checking whether stated probabilities match relevant observed frequencies over repeated cases. Record what the minimum, peak and maximum mean, who supplied them and what evidence would change them."
       ],
       "predict": "If the mode is 4 and the bounds are 2 and 12, must the mean be 4?",
       "look": "The hard upper bound guarantees no larger modelled duration. That guarantee comes from the assumption, not observations.",
@@ -921,7 +933,7 @@
       "goal": "Separate uncertainty about an estimated parameter from variation in future outcomes.",
       "explain": [
         "If a model parameter was estimated from a finite sample, treating it as known hides one source of uncertainty. A bootstrap can approximate uncertainty in a statistic by resampling independent observed units and recalculating that statistic.",
-        "Below each row is a bootstrap sample of invented independent demand days. Its mean is one bootstrap estimate of expected demand. Those means describe uncertainty in an estimated expectation under this resampling model. They are not a distribution of individual future daily demand.",
+        "Below each row is a bootstrap sample of invented independent demand days. Its mean is one bootstrap estimate of expected demand. Those means describe uncertainty in an estimated expectation under this resampling model. They are not a distribution of individual future daily demand. The percentile bootstrap interval takes the 2.5th and 97.5th percentiles of these recalculated means. It is an approximate interval for the expected demand, relying on representative independent days; small samples can give poor coverage.",
         "For a predictive model, future outcome variation and parameter uncertainty can both matter, but they must be combined coherently. Simply adding their standard deviations or reusing the same variation twice does not create a justified model. Later Bayesian examples show another way to separate these layers."
       ],
       "predict": "Will the bootstrap means have the same spread as individual daily demands?",
@@ -949,7 +961,8 @@
       "module": 3,
       "code": "23-the-parameters-are-estimates-too.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$d_i$ is original day i. A starred, barred d denotes the mean from one resampled set of days. In the question, classroom clustering means pupils in the same classroom can share dependence; the independent unit may be a whole classroom."
     },
     {
       "slug": "a-scenario-is-not-a-probability",
@@ -986,7 +999,8 @@
       "module": 3,
       "code": "24-a-scenario-is-not-a-probability.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "D is demand; here $\\lambda$ is its expected count within the chosen time window. The vertical bar in $P(D>80\\mid\\lambda=40)$ reads ‘given the scenario with mean 40’."
     },
     {
       "slug": "independence-changes-the-answer",
@@ -994,7 +1008,7 @@
       "short": "Compare a joint outcome under independent and dependent inputs.",
       "goal": "Compare a joint outcome under independent and dependent inputs.",
       "explain": [
-        "Independence means that learning one input does not change the distribution of the other. It is stronger than saying two inputs have different names or came from different spreadsheet columns.",
+        "Independence means that learning one input does not change the distribution of the other. It is stronger than saying two inputs have different names or came from different spreadsheet columns. A marginal distribution is one variable's distribution considered on its own; matching the two marginals does not specify how they vary together.",
         "Consider the sum of two positive costs. In the independent model each cost gets a separate uniform draw. In the shared model both costs move with the same draw. Their individual distributions are the same, but the distribution of their sum changes.",
         "This distinction is important for budgets and deadline risks. Matching each input’s histogram does not determine the joint outcome. When relationships are uncertain, compare explicit dependency scenarios and identify which part of the decision they affect."
       ],
@@ -1033,7 +1047,7 @@
       "explain": [
         "A common cause is a simulated condition that influences several outcomes. It should be drawn once for the relevant unit. Drawing a fresh weather condition for every calculation in one event would erase the relationship the model intends to represent.",
         "Here a busy-day factor affects both arrival counts and average spending. Each trial draws one factor and passes it into both calculations. Conditional on that factor, additional randomness can still remain in each outcome.",
-        "This hierarchical structure is often easier to explain than an arbitrary correlation coefficient. Its interpretation still depends on evidence: an authored factor model is one possible mechanism, not proof of how a real shop behaves. Inspect intermediate values so a hidden shared cause does not remain an unexplained numerical trick."
+        "This hierarchical model draws a shared condition first, then outcomes given that condition. The factor is latent, meaning unobserved in the scenario, rather than a separate measured input. It is one possible mechanism, not proof about a real shop. Inspect intermediate values and challenge the shared-cause assumption."
       ],
       "predict": "What happens to the intended dependence if you redraw the day factor separately for spending?",
       "look": "The model makes the common factor inspectable. Revenue inherits both its direct and indirect effects.",
@@ -1060,7 +1074,8 @@
       "module": 4,
       "code": "26-make-the-shared-cause-visible.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "F is the shared busy-day multiplier; log(F) is normal with mean 0 and SD .25. The arrows mean use that same F in both calculations."
     },
     {
       "slug": "correlation-does-not-tell-the-whole-story",
@@ -1068,8 +1083,8 @@
       "short": "Recognise dependence that a near-zero linear correlation can conceal.",
       "goal": "Recognise dependence that a near-zero linear correlation can conceal.",
       "explain": [
-        "Pearson correlation summarises linear association. A value near zero does not generally imply independence. Nonlinear relationships can make one variable highly informative about another while their positive and negative linear contributions cancel.",
-        "Generate a symmetric input X and set Y to its absolute value. Knowing X determines Y. Yet the sample linear correlation can be close to zero. A scatterplot makes the relationship easier to see than one coefficient.",
+        "Pearson correlation measures how strongly two quantities vary along a straight-line relationship. It ranges from -1 to 1: +1 is a perfect increasing line, -1 a perfect decreasing line, and zero means this linear summary finds no association. Zero need not mean independence.",
+        "Generate a symmetric input X and set Y to its absolute value, written |X|: remove the sign, so |-2|=2. Knowing X determines Y, yet positive and negative linear contributions cancel and correlation can be near zero. The V-shaped plot reveals what the coefficient misses.",
         "This is also a reminder that an observed correlation does not identify a causal mechanism. In a simulation the relationship is known because the generator defines it. In measured data, shared causes, selection and direction need separate reasoning. Use a dependency model that reflects the mechanism relevant to the question."
       ],
       "predict": "Can one variable determine another while their Pearson correlation is near zero?",
@@ -1103,14 +1118,14 @@
       "slug": "generate-correlated-normal-inputs",
       "title": "Generate correlated normal inputs",
       "short": "Construct a multivariate normal draw with an explicit covariance matrix.",
-      "goal": "Construct a multivariate normal draw with an explicit covariance matrix.",
+      "goal": "Generate two correlated normal inputs using shared and independent variation.",
       "explain": [
-        "A covariance matrix records variances on its diagonal and pairwise covariances elsewhere. For standardised variables with variance one, covariance equals correlation. A valid matrix must be symmetric and positive semidefinite; the Cholesky construction here requires positive definiteness.",
-        "Start with independent standard normal draws. Multiplying by the transpose of a Cholesky factor transforms their covariance into the requested matrix. Row vectors and the transpose matter: the matrix multiplication must match the way observations are stored.",
-        "Finally scale and shift the standardised columns into quantities with units. The requested correlation applies to this normal model. It does not automatically describe the correlation after a nonlinear transformation such as exponentiation. Check the generated support and empirical relationship as well as the matrix arithmetic."
+        "Start with independent standard normal draws $Z_1$ and $Z_2$: each has mean 0 and SD 1. Choose correlation ρ between -1 and 1. Set $A=Z_1$ and $B=\\rho Z_1+\\sqrt{1-\\rho^2}Z_2$. The second input shares part of A and adds fresh independent variation; the coefficients preserve its model variance.",
+        "For ρ=.7, the shared coefficient is .7 and the fresh coefficient is $\\sqrt{.51}$, about .714. B's variance is $.49+.51=1$, while its correlation with A is .7. Covariance is the expected product of deviations from the means; a positive value indicates movement in the same direction. For these standardised variables, covariance equals correlation.",
+        "Scale and shift into units: cost A is $100+10A$ and cost B is $80+8B$. Standardised means zero mean and unit SD; scaling changes covariance and units but preserves correlation here. The printed covariance matrix is a table: variances down the diagonal and pairwise covariances off it. Nonlinear transformations can change correlation, so check the resulting joint model."
       ],
-      "predict": "Does changing the sign of the off-diagonal correlation change either column’s marginal variance?",
-      "look": "The construction targets covariance before the final scaling. Finite samples approximate, rather than exactly equal, that target.",
+      "predict": "If correlation changes from .7 to −.7, must either input’s own variance change?",
+      "look": "Check mean approximately 0, variance approximately 1 and covariance approximately ρ before scaling. The finite sample approximates those model quantities; it need not match exactly.",
       "change": "Try correlations 0 and -0.7. Compare total-cost spread while keeping the marginals fixed.",
       "question": "You specify a correlation of 1.4 between standardised variables. What should you do?",
       "options": [
@@ -1119,10 +1134,10 @@
         "Clip the generated results after simulation."
       ],
       "correct": 1,
-      "feedback": "A correlation must lie between -1 and 1 and the full matrix must be valid. More computation cannot repair an impossible input model.",
+      "feedback": "Correlation must lie between -1 and 1. Outside that range, sqrt(1−rho²) is not real. Revise the invalid dependence specification before generating draws.",
       "hints": [
         "Check the mathematical constraints on correlation.",
-        "Validate the covariance structure before drawing."
+        "Check the coefficients that keep the second input’s variance equal to one."
       ],
       "limit": "Normal inputs allow negative values and linear dependence. They may be inappropriate for bounded or strongly skewed quantities.",
       "source": [
@@ -1134,7 +1149,8 @@
       "module": 4,
       "code": "28-generate-correlated-normal-inputs.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\rho$ is the requested correlation; $Z_1,Z_2$ are independent mean-zero, unit-SD normal draws. The square-root coefficient keeps B's variance equal to one. The `assert` line stops with a message if the chosen correlation is invalid."
     },
     {
       "slug": "sample-one-condition-after-another",
@@ -1171,7 +1187,8 @@
       "module": 4,
       "code": "29-sample-one-condition-after-another.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$X\\mid p$ reads ‘attendance X given guest chance p’. The weather selects p once for each complete event."
     },
     {
       "slug": "stress-test-the-dependency-assumption",
@@ -1208,7 +1225,8 @@
       "module": 4,
       "code": "30-stress-test-the-dependency-assumption.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "μ and σ name each input's mean and SD. ρ names the assumed correlation; the scenario values have not been assigned probabilities."
     },
     {
       "slug": "will-the-project-finish-on-time",
@@ -1291,7 +1309,7 @@
       "goal": "Compare shortage and waste under the same simulated attendance outcomes.",
       "explain": [
         "Catering is a decision problem because both preparing too little and preparing too much have consequences. A demand forecast alone cannot choose a food quantity without an objective or service constraint.",
-        "Use the same simulated attendance for every preparation option. Each trial has a shortage count and a waste count. Weighting them by stated penalties gives a loss measured in a common unit. Those penalties are decision assumptions, not properties of the random generator.",
+        "Use the same simulated attendance for every preparation option. Each trial has a shortage count and a waste count. Weighting them by stated penalties gives a loss measured in a common unit. Those penalties are decision assumptions, not properties of the random generator. For one event, shortage is attendance above the prepared meals, floored at zero. Waste reverses that difference; neither count can be negative.",
         "The lowest expected loss can differ from the option with the smallest shortage probability. Report both if service quality matters. Reusing the same events for all options makes their comparison more precise without asserting that the events are real observations."
       ],
       "predict": "Will the preparation quantity with the lowest shortage probability necessarily minimise expected loss?",
@@ -1319,7 +1337,8 @@
       "module": 5,
       "code": "33-enough-food-without-too-much-waste.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$(x)_+$ means max(x,0), the positive part. $A_i$ is attendance in event i, m is prepared meals, and L is the resulting penalty in pounds."
     },
     {
       "slug": "how-uncertain-is-a-calculated-measurement",
@@ -1328,7 +1347,7 @@
       "goal": "Propagate input measurement distributions through a nonlinear calculation.",
       "explain": [
         "A calculated quantity can be uncertain because its measured inputs are imprecise. Monte Carlo propagation draws plausible input values under a measurement model and recalculates the derived quantity for each trial.",
-        "For a rectangular panel, area is width times height. The example treats the supplied dimensions as uncertain independent normal quantities around measured central values. That interpretation requires a measurement and calibration argument; it is not automatically the distribution of errors or of the unknown true values.",
+        "For a rectangle, area is width times height. The supplied normal distributions represent uncertainty about the dimensions given the stated measurements, not a collection of new panels. Calibration compares an instrument with a reference and may reveal a shared offset. Such a shared uncertainty must be modelled jointly; independent repeated-reading noise is a different interpretation.",
         "The resulting area distribution is an output of the joint input model. Its percentiles describe propagated measurement uncertainty under those assumptions. Dividing their spread by the square root of the simulation count would instead address numerical error in an estimated summary, not make the panel’s dimensions more certain."
       ],
       "predict": "Does running more area calculations improve the physical measuring instrument?",
@@ -1356,7 +1375,8 @@
       "module": 5,
       "code": "34-how-uncertain-is-a-calculated-measurement.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "W is width, H is height and A=WH is area; centimetres times centimetres gives square centimetres."
     },
     {
       "slug": "how-reliable-is-a-whole-product",
@@ -1365,7 +1385,7 @@
       "goal": "Translate a component relationship into a system success event.",
       "explain": [
         "Reliability over a stated mission asks whether the system performs its required function throughout that mission. A component reliability is a probability tied to a boundary and duration, not a timeless property.",
-        "For a series system every component must work. For a parallel system with sufficient redundancy at least one component must work. The code uses independent component states and compares both events on the same draws. Independent analytical formulas provide exact model references.",
+        "For a series system every component must work. For a parallel system with sufficient redundancy at least one component must work. The code uses independent component states and compares both events on the same draws. Independent analytical formulas provide exact model references. In NumPy, all(axis=1) asks whether every component in each row works; any(axis=1) asks whether at least one does.",
         "A diagram or Boolean rule should precede the calculation. Components that share a power source, environment or manufacturing defect may fail together. Parallel reliability can be overestimated if the model ignores a shared cause or assumes that either component can carry the complete load."
       ],
       "predict": "Which Boolean operation matches a series system: all or any?",
@@ -1393,7 +1413,8 @@
       "module": 5,
       "code": "35-how-reliable-is-a-whole-product.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\prod_i p_i$ means multiply all component success probabilities. For independent chances .9 and .8, series success is .9×.8=.72 and parallel success is 1−.1×.2=.98."
     },
     {
       "slug": "estimate-an-integral-by-sampling",
@@ -1430,7 +1451,8 @@
       "module": 5,
       "code": "36-estimate-an-integral-by-sampling.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "The integral sign $\\int_a^b f(x)\\,dx$ means the signed area under f from a to b; f is the integrand, the function being averaged. X ~ U(0,2) reads ‘draw X uniformly between 0 and 2’."
     },
     {
       "slug": "follow-a-random-walk",
@@ -1467,7 +1489,8 @@
       "module": 6,
       "code": "37-follow-a-random-walk.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "In the plot call, `paths[:12]` selects the first twelve paths. The transpose `.T` swaps rows and columns, so the plotting function draws each complete path as one line."
     },
     {
       "slug": "move-between-states",
@@ -1476,7 +1499,7 @@
       "goal": "Simulate a Markov transition model and check its probability rows.",
       "explain": [
         "A Markov model specifies the next-state distribution from the current state. In this first model, the past affects the future only through that state. The transition matrix has one row per current state and one column per next state.",
-        "Each row must be a valid categorical distribution. Generate an independent uniform value for every path at each step, then use the current state’s cumulative probabilities to select the next state. The final proportions describe this starting state and finite horizon.",
+        "Turn a transition row into cumulative cutoffs: [.75,.20,.05] gives [.75,.95,1]. A uniform draw .90 falls after .75 but before .95, selecting state 1 (states start at 0). Do this using the current state's row for every path at each step. An assert stops execution when a required check fails; allclose checks equality within a small numerical tolerance.",
         "A transition matrix does not establish that a real process is Markov or that its probabilities are stable. If the duration already spent in a state changes its transition probability, the state description may need to include that duration. MCMC later uses Markov transitions for a different purpose: numerical sampling from a target distribution."
       ],
       "predict": "Why must each row sum to one rather than the entire matrix?",
@@ -1512,7 +1535,7 @@
       "short": "Calculate finish time from a task dependency graph.",
       "goal": "Calculate finish time from a task dependency graph.",
       "explain": [
-        "Task durations alone do not determine project completion. The dependency graph says which tasks can run together and which must wait. For two parallel preparation tasks followed by a review, completion is max(A, B) plus the review duration.",
+        "Task durations alone do not determine project completion. The dependency graph says which tasks can run together and which must wait. For two parallel preparation tasks followed by a review, completion is max(A, B) plus the review duration. The critical path is the dependent task chain controlling completion; here it passes through the slower preparation and then review.",
         "Simulate the same duration draws under both a serial and a parallel schedule. This isolates the scheduling rule from differences in sampled tasks. With positive durations and unlimited resources for the parallel branches, the parallel schedule cannot take longer than the serial one in the same trial.",
         "Real resource constraints may prevent this ideal parallelism. A shared specialist, common equipment or rework loop belongs in the model when it affects feasibility. A shorter simulated finish does not establish that the organisation can execute the proposed schedule."
       ],
@@ -1551,7 +1574,7 @@
       "explain": [
         "A dynamic inventory model needs a ledger: on-hand stock, outstanding orders, receipts, demand and unmet demand. The timing convention is part of the policy. Here receipts arrive at the start of a day, demand is served next, and a reorder decision is made at the end.",
         "Inventory position includes on-hand stock plus outstanding orders. Reordering from on-hand stock alone can place duplicate orders while an earlier delivery is already on its way. A two-slot pipeline represents an order arriving two days after its end-of-day placement.",
-        "This teaching model loses unmet sales rather than creating backorders. It uses independent Poisson daily demand and a fixed lead time. Report the horizon and initial stock: starting with a full shelf can make a short simulation look better than sustained operation."
+        "Unmet sales are lost in this example. A backorder instead keeps unmet demand to deliver later. Lead time is the delay from ordering to receipt; here it is fixed at two days. Independent Poisson demand and a full starting shelf are teaching assumptions. A short run can look better than sustained operation."
       ],
       "predict": "Should outstanding orders count when deciding whether another order is needed?",
       "look": "The pipeline and demand are updated in a declared order. Changing that order changes the operational model.",
@@ -1587,8 +1610,8 @@
       "goal": "Compute waiting times using arrival and service timelines.",
       "explain": [
         "A queue’s wait is not just its service duration. A customer may arrive while earlier work still occupies the server. For one first-come-first-served server, service starts at the later of the arrival time and the previous completion.",
-        "Each simulation row below is a finite sequence of one hundred customers starting with an empty system. Inter-arrival times and service times are independent exponentials with stated means. The code carries the completion time forward so each wait includes work already ahead.",
-        "These finite initially empty traces do not establish a steady-state service guarantee. Near or above capacity, longer horizons can reveal waits a short trace conceals. Report arrival assumptions, starting state, observation boundary and whether unfinished customers are retained."
+        "Each row is one sequence of one hundred customers, initially empty. Inter-arrival time is the gap between arrivals. With arrival rate λ and mean service work m, arriving work per time unit is λm. One server has capacity 1; if λm exceeds 1, backlog grows on average. The example starts below that load.",
+        "A steady state is a distribution of queue conditions that no longer changes with time; it requires stability and is not guaranteed by a finite run. At arrival rate 1.1 and mean service time 1, arriving work exceeds capacity. Compare longer horizons, keeping initial state and unfinished work explicit. Waits within a trace share queue state, so use independent trace summaries for error estimates."
       ],
       "predict": "Can waiting increase even when the service-time distribution stays unchanged?",
       "look": "Customers within one trace share queue state and are not independent samples. Use independent trace summaries for a run-level uncertainty calculation.",
@@ -1615,7 +1638,8 @@
       "module": 6,
       "code": "41-a-queue-remembers-earlier-arrivals.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "For customer i, $a_i$ is arrival time, $v_i$ service duration, $s_i$ start time, $f_i$ finish time and $w_i$ wait. The previous customer's finish is $f_{i-1}$."
     },
     {
       "slug": "failure-and-repair-use-up-time",
@@ -1689,7 +1713,8 @@
       "module": 7,
       "code": "43-vectorise-without-changing-the-question.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "In the code, array_equal checks exact equality of the two arrays. allclose is a related check allowing small rounding differences; either checks values and shape, not model validity."
     },
     {
       "slug": "compare-options-in-the-same-possible-world",
@@ -1699,7 +1724,7 @@
       "explain": [
         "Common random numbers reuse underlying random inputs when comparing alternatives. When outcomes move together positively, this can reduce the variance of their difference. The useful target is the difference itself, not two separately impressive-looking means.",
         "The example estimates the change from U squared to U cubed. Under uniform U their expectations are one third and one quarter, so the exact difference is minus one twelfth. Shared and separate draws have the same target but different comparison variance.",
-        "The benefit depends on coupling the alternatives appropriately. If the outcomes move in opposite directions, sharing draws can increase difference variance. Preserve meaningful correspondence between trials and assess the variance of the actual decision statistic."
+        "The benefit depends on coupling the alternatives appropriately. If the outcomes move in opposite directions, sharing draws can increase difference variance. Preserve meaningful correspondence between trials and assess the variance of the actual decision statistic. For a paired difference, $\\operatorname{Var}(B-A)=\\operatorname{Var}(B)+\\operatorname{Var}(A)-2\\operatorname{Cov}(A,B)$. Positive covariance subtracts from the difference variance; negative covariance adds to it."
       ],
       "predict": "Why can shared random inputs make a difference estimate more precise even if neither marginal estimator improves?",
       "look": "The shared-input comparison removes some common fluctuation from the difference. Pairing does not justify independence between the two option outcomes.",
@@ -1763,7 +1788,8 @@
       "module": 7,
       "code": "45-give-every-part-of-the-domain-a-turn.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$I_h$ is stratum h, one piece of the domain. $\\bigcup$ joins all pieces; $w_h$ is the piece's probability weight and $\\bar f_h$ is its sample function mean."
     },
     {
       "slug": "pair-opposite-draws",
@@ -1809,7 +1835,7 @@
       "goal": "Construct a control-variate estimator using a known expectation.",
       "explain": [
         "A control variate is a related random quantity whose expectation is known. Subtracting a coefficient times its deviation from that expectation leaves the target expectation unchanged, while a useful coefficient can reduce variance.",
-        "Estimate $e^U$ with U as a control and known E[U]=0.5. The coefficient is fitted using a separate pilot sample, then held fixed for the production sample. This separation keeps the simple unbiasedness argument inspectable conditional on the pilot coefficient.",
+        "An unbiased estimator averages to the target over repeated independent runs; one run still has random error. Bias is a systematic difference between that repeated-run average and the target. Fit the coefficient on a separate pilot sample, then hold it fixed on the main draws. Since E[U−.5]=0, the fixed adjustment has zero mean and preserves the target.",
         "A poor coefficient can increase variance. A wrong claimed control expectation shifts the target and introduces bias. Always state where the reference expectation comes from and compare precision for the actual controlled estimator. More elaborate same-sample coefficient procedures need their own analysis."
       ],
       "predict": "What happens if you subtract a control whose supposed expectation is wrong?",
@@ -1837,7 +1863,8 @@
       "module": 7,
       "code": "47-subtract-a-fluctuation-you-can-explain.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\widehat\\beta$ is the pilot-fitted coefficient. The contribution Y is the original function value minus that coefficient times the known-zero-mean fluctuation."
     },
     {
       "slug": "spread-points-with-randomised-sobol-sampling",
@@ -1948,7 +1975,8 @@
       "module": 8,
       "code": "50-compare-feasible-options.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "Feasible means meeting the declared requirements. min gives the smallest loss value; argmin gives the option that achieves it. First filter by the service requirement, then rank the remaining options."
     },
     {
       "slug": "inspect-the-downside-as-well-as-the-mean",
@@ -1995,7 +2023,7 @@
       "explain": [
         "A robust recommendation should explain which assumptions support it and where it changes. Sensitivity analysis deliberately varies an input or relationship while retaining the decision procedure.",
         "Here demand mean is a scenario input. Every scenario compares the same stock options and penalty rule, then reports its preferred choice. The result is a decision map, not a probability distribution over scenarios.",
-        "Changing one input at a time can be useful for understanding, but can miss interactions. Once a boundary is visible, test combinations of uncertain assumptions near it. The most valuable next measurement may be an input that determines which side of the decision boundary the real situation lies on."
+        "An interaction means the effect of one input depends on another. Raising mean demand may change the preferred stock more when a shortage is very costly than when it is cheap. Test combinations of demand and shortage penalty near a decision boundary; a one-input-at-a-time map can miss that dependence."
       ],
       "predict": "If the preferred stock rises with assumed demand, does that mean the scenario rates have been estimated from data?",
       "look": "The input values were chosen for exploration. The table shows conditional decisions, not estimated scenario probabilities.",
@@ -2059,7 +2087,8 @@
       "module": 8,
       "code": "53-what-would-better-information-be-worth.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "notation": "EVPI abbreviates expected value of perfect information. In min_a E[L(a,X)], choose one action a before the state X is known; in E[min_a L(a,X)], choose the best action separately after seeing each X. Risk-neutral here means ranking by expected loss."
     },
     {
       "slug": "a-policy-can-respond-to-new-information",
@@ -2068,7 +2097,7 @@
       "goal": "Compare an adaptive decision with a fixed decision using the information actually available.",
       "explain": [
         "A policy maps available information to an action. It differs from a fixed choice and from an impossible hindsight rule that sees the future. Specify when the signal arrives and what it reveals before allowing the policy to act.",
-        "In this example a noisy early signal is related to later demand through a shared latent condition. A fixed stock is compared with a policy that stocks more after a high signal. Neither policy can inspect realised demand before acting.",
+        "In this example a noisy early signal is related to later demand through a shared latent condition. A fixed stock is compared with a policy that stocks more after a high signal. Neither policy can inspect realised demand before acting. Latent means that shared condition is not directly observed; the policy sees the early signal, not the condition or future demand.",
         "Use matched simulated conditions to compare losses. Optimising a threshold on one batch and reporting its apparent performance on that same batch can overfit simulation noise. Hold out independent evaluation trials when selecting a policy from many candidates."
       ],
       "predict": "Would a policy that chooses stock after seeing final demand be a fair operational comparison?",
@@ -2142,7 +2171,7 @@
       "goal": "Use held-out evidence to challenge a model’s predictive behaviour.",
       "explain": [
         "Validation asks whether a model is adequate for its intended use. It can involve comparing predictions with observations that were not used to choose or fit the model. A model can pass arithmetic checks while failing this empirical comparison.",
-        "This illustration supplies an invented held-out demand record and compares it with an assumed Poisson prediction. Count how often observations exceed the model’s nominal 90th percentile. With a small validation set the count is itself variable, and repeated time observations may be dependent.",
+        "This illustration supplies an invented held-out demand record and compares it with an assumed Poisson prediction. Count how often observations exceed the model’s nominal 90th percentile. With a small validation set the count is itself variable, and repeated time observations may be dependent. Nominal means the stated model level. For integer counts the P90 cutoff can cover more than 90%, so fewer than 10% may lie strictly above it even in a correct model.",
         "A discrepancy can reveal a poor model, changed conditions, a measurement problem or a mismatched validation population. It should lead to investigation. Do not delete inconvenient validation observations or retune on them while continuing to call them an untouched test set."
       ],
       "predict": "Does a prediction covering about 90% in its own simulated data guarantee 90% coverage on new observations?",
@@ -2290,7 +2319,7 @@
       "goal": "Export a reproducible analysis and a scoped decision or uncertainty report.",
       "explain": [
         "Choose a general problem: time and budget, demand and resources, or measurement and reliability. Define the question, target quantity, units, input provenance, dependency assumptions, trial budget and validation checks before interpreting the final result.",
-        "The editor provides three starter cases. Set case to inventory, project or measurement. Each uses explicitly invented input values unless you upload a CSV containing a positive finite value column. For inventory those values represent demand; for project they represent task durations in days; for measurement they represent radius in centimetres. Uploading validates structure, not provenance, independence or suitability.",
+        "The starter chooses case=inventory, project or measurement. CSV column value holds one positive finite observation per row. Inventory resamples daily demand to compare stock levels and shortage/waste penalties. Project sums five resampled task durations in days, then compares supplied duration multipliers. Measurement resamples radius in centimetres and calculates circle area πr² in square centimetres, where π≈3.14159. Defaults are invented; uploaded rows still need a justification for independent reuse.",
         "Use the report fields to connect the question, model, evidence, result, uncertainty, limitations and next experiment. Export the exact run JSON and a Markdown report alongside your original input file. A finding that leaves a decision unresolved is valid when its assumptions and limits are clear. Independent investigation time is additional to this guided starter."
       ],
       "predict": "Can a structurally valid CSV prove that its values represent the future conditions you care about?",
@@ -2326,7 +2355,7 @@
       "short": "Generate a target distribution by transforming a uniform draw through its inverse CDF.",
       "goal": "Generate a target distribution by transforming a uniform draw through its inverse CDF.",
       "explain": [
-        "A cumulative distribution function, or CDF, gives $P(X\\le x)$. Its inverse maps a probability level to the corresponding quantile. Applying that inverse to a uniform draw produces the target distribution under the usual generalised-inverse construction.",
+        "A cumulative distribution function (CDF) gives $F(x)=P(X\\le x)$, the probability at or below x. Its inverse takes a probability level u and returns its quantile. For jumps or flat stretches, use the generalised inverse: the smallest x whose cumulative probability reaches u. Feeding independent uniform levels into it generates the target distribution.",
         "For an exponential distribution with scale $s$, the inverse transform is $-s\\log(1-U)$. NumPy’s `log1p(-U)` evaluates $\\log(1-U)$ accurately when $U$ is small. The same uniform input should give the same quantile through this formula and the library inverse CDF; keep the domain and units attached.",
         "The transformation is a sampling mechanism, not evidence that an exponential model fits a real process. Check its support, quantiles and moments against the stated target. Other inverse CDFs may require numerical evaluation, and finite precision can matter in extreme tails."
       ],
@@ -2402,7 +2431,7 @@
       "explain": [
         "Importance sampling estimates an expectation under a target distribution p while drawing from a proposal q. Multiply the function value by p(x)/q(x), then average under q. The density ratio corrects for sampling some regions more or less often.",
         "The target here is standard normal and the function is $e^X$. We draw from a normal proposal shifted towards larger X, where the function contributes more. Using the unweighted proposal average would answer a different question.",
-        "Work in log densities when convenient, then exponentiate the combined log contribution. The proposal must cover every region where the target integrand contributes, and the weighted estimator needs suitable moments for an ordinary MCSE calculation. A valid estimator can still be so variable that a modest run is misleading."
+        "Work in log densities when convenient, then exponentiate the combined contribution. The proposal must cover every region where the target integrand contributes. Ordinary MCSE also needs independent weighted contributions with finite variance; it is the variance of those contributions, not just of raw X, that matters. Poor overlap can make a modest run misleading."
       ],
       "predict": "Does moving the proposal mean change the target expectation when weights are correct?",
       "look": "The target stays standard normal. The visibly different unweighted average estimates the proposal expectation.",
@@ -2438,8 +2467,8 @@
       "goal": "Detect support mismatch that more importance samples cannot repair.",
       "explain": [
         "A proposal needs positive density wherever the target integrand contributes. If it never samples a relevant region, no weight assigned to the samples it does produce can recover that missing contribution.",
-        "The target below is uniform on [0,1] and the integrand is X squared. A proposal restricted to [0,.5] omits much of the integral. Its apparent weighted result converges to the contribution from that restricted interval, not the full target expectation.",
-        "A mixture proposal can retain broad coverage while concentrating additional samples in a selected region. Its weight uses the full mixture density, not merely the density of the component that happened to generate a particular draw. Correct support is necessary, but a tiny proposal density in an important region can still produce unstable weights."
+        "The target is uniform on [0,1] and the function is X². Drawing only on [0,.5] misses the entire right half. A uniform density is 1 divided by interval width, so the restricted density is 2. The weighted contribution X²/2 averages towards the integral over only the left half, not the full target expectation 1/3.",
+        "The repair draws from [0,.5] with chance .8, otherwise from [0,1]. On the left, the full mixture density is .8×2+.2×1=1.8; on the right it is .2×1=.2. Divide X² by this complete density, including both routes to a left-half draw. Covering the domain is necessary, but very small density in important regions can still cause unstable weights."
       ],
       "predict": "Can a million samples restricted to the lower half of the domain reveal the upper half’s contribution?",
       "look": "The restricted result is precisely estimating the wrong domain contribution. The mixture’s full density accounts for both routes to a draw.",
@@ -2466,7 +2495,8 @@
       "module": 10,
       "code": "64-a-proposal-must-reach-the-answer.py",
       "track": "advanced",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\mathbf1_{x\\le1/2}$ is 1 on the left half and 0 elsewhere. Thus .2+1.6 times this indicator is 1.8 on the left and .2 on the right, within [0,1]."
     },
     {
       "slug": "keep-weights-stable-on-a-log-scale",
@@ -2474,9 +2504,9 @@
       "short": "Normalise extreme log weights without numerical underflow.",
       "goal": "Normalise extreme log weights without numerical underflow.",
       "explain": [
-        "Probability densities and likelihood products can be extremely small or large. Direct exponentiation can underflow to zero or overflow to infinity before an otherwise meaningful ratio is calculated.",
-        "For log weights l_i, subtract `logsumexp(l)` before exponentiating to obtain normalised weights. Adding a common constant to every log weight leaves those normalised weights unchanged. The operation stabilises the arithmetic; it does not improve the statistical overlap of target and proposal.",
-        "Normalising weights also has a statistical meaning. If a target normalising constant is unknown, using a ratio of weighted sums creates a self-normalised estimator, discussed later. Do not silently replace an ordinary unbiased importance estimator with a different ratio estimator while keeping the original error interpretation."
+        "Floating-point arithmetic has a finite range. Expanding very negative log weights can underflow, rounding them all to zero before their ratios are formed. Very large exponentials can overflow to infinity. Log weights record the logarithms of positive weights so ratios can be handled before exponentiation.",
+        "logsumexp(l) means log(sum(exp(l))). It computes this stably by subtracting the largest log value m first, then returning m+log(sum(exp(l−m))). For [-1001,-1000,-999], m=-999 leaves [-2,-1,0], whose exponentials are representable. Divide those exponentials by their sum: approximately [.090,.245,.665]. A common shift cancels from normalised weights.",
+        "The code uses exp(l−logsumexp(l)), the same normalisation in one expression. This repairs arithmetic, not poor target/proposal overlap. For an ordinary importance estimate with known normalising constant, preserve its original contribution scale. A self-normalised estimate instead divides weighted function values by total weight; the next lessons examine that different ratio estimator."
       ],
       "predict": "Should adding the same constant to every log weight change their normalised proportions?",
       "look": "The stable calculation recovers meaningful relative weights even though direct exponentials all become zero.",
@@ -2503,7 +2533,8 @@
       "module": 10,
       "code": "65-keep-weights-stable-on-a-log-scale.py",
       "track": "advanced",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\ell_i$ is log weight i, z is logsumexp of all log weights, and $\\widetilde w_i$ is its positive weight divided by the total. In code, `dot` multiplies corresponding entries and adds them, giving the weighted sum."
     },
     {
       "slug": "see-a-rare-event-more-often",
@@ -2540,7 +2571,8 @@
       "module": 10,
       "code": "66-see-a-rare-event-more-often.py",
       "track": "advanced",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\mathbf1_{X>5}$ is 1 for a proposal draw above five and 0 otherwise; w(X) is the target-to-proposal density ratio."
     },
     {
       "slug": "when-one-weight-dominates",
@@ -2548,9 +2580,9 @@
       "short": "Use weight concentration as a diagnostic without treating it as a precision guarantee.",
       "goal": "Use weight concentration as a diagnostic without treating it as a precision guarantee.",
       "explain": [
-        "Normalised importance weights reveal how much a finite weighted sample relies on a few observations. A common weight effective-sample-size diagnostic is one divided by the sum of squared normalised weights. Equal weights give the raw count; a single dominant weight gives about one.",
-        "This weight ESS is not a universal sample count for every function. It differs from autocorrelation-based MCMC ESS and cannot detect every missing region. A proposal may entirely miss an important mode while the observed weights look innocuous.",
-        "Compare shifted normal proposals for a standard normal target. A larger shift creates poorer overlap for this target, and a few rare low values can dominate the weighted approximation. Repeat the experiment and inspect the target quantity, weight distribution and known references rather than trusting one diagnostic number."
+        "Normalise positive importance weights by their total. Their concentration diagnostic, weight effective sample size (ESS), is 1 divided by the sum of squared normalised weights. Four equal weights .25 give ESS=4; one weight 1 and the rest zero give ESS=1. This measures observed weight concentration.",
+        "The displayed weighted mean is self-normalised: sum(w×X)/sum(w), or equivalently sum(normalised_weight×X). It is a ratio of random sums, rather than the ordinary importance average from 63. At finite draw counts its expectation can differ from the target; the next lesson explains that bias and its convergence conditions.",
+        "Compare shifted normal proposals for the same standard normal target. Large shifts can leave a few observations dominating the estimate. Weight ESS cannot detect every missing region or certify error for every function. A mode is a density peak; an entirely missed peak may leave observed weights looking harmless. Repeat runs and inspect both the target quantity and weights."
       ],
       "predict": "Does a large weight ESS prove that no important target region was missed?",
       "look": "The displayed weighted mean is self-normalised. Its finite-sample bias and variability remain relevant even if the arithmetic is stable.",
@@ -2586,8 +2618,8 @@
       "goal": "Construct a self-normalised importance estimate and recognise finite-sample ratio bias.",
       "explain": [
         "Sometimes a target density is known only up to a positive multiplicative constant. Dividing weighted function sums by weighted mass sums cancels that constant. This is self-normalised importance sampling.",
-        "The estimator is a ratio of random quantities. Even when numerator and denominator individually have suitable expectations, the expected ratio is not generally the ratio of expectations. Self-normalised estimates are typically biased at finite sample sizes, while remaining consistent under appropriate conditions.",
-        "The target below has unnormalised density exp(-x to the fourth divided by four). Its symmetry and an analytical second moment give useful checks. A normal proposal covers the support. Stable normalised weights produce an estimate of E[X squared], not an unbiased ordinary-importance integral with a known normaliser."
+        "Bias means repeated-run average error at a fixed sample size. Consistency means approaching the target as sample size grows under suitable assumptions. A ratio can be consistent but biased at finite n, because E[A/B] generally differs from E[A]/E[B]. Support, integrable contributions and a nonzero finite denominator expectation are needed for the ratio's convergence; error bars need further variance conditions.",
+        "The target has unnormalised density exp(−x⁴/4). Its second moment means E[X²], the average squared value under the target. Symmetry and a supplied exact gamma-function calculation provide checks; gamma is a special function used only for this optional analytic reference. A normal proposal covers the domain. Estimate E[X²] using the normalised weighted ratio, retaining its finite-sample limitations."
       ],
       "predict": "Does cancelling an unknown constant also eliminate every finite-sample bias?",
       "look": "The analytical check is valuable because a stable-looking ratio can still be inaccurate. Ordinary iid SE of the raw X squared values would ignore the weights and ratio.",
@@ -2622,9 +2654,9 @@
       "short": "Combine a beta prior with a binomial likelihood to obtain a posterior.",
       "goal": "Combine a beta prior with a binomial likelihood to obtain a posterior.",
       "explain": [
-        "Bayesian inference represents an uncertain parameter with a distribution. A prior describes the parameter before the selected observations. A likelihood describes how observations vary for a given parameter. Their product, normalised to integrate to one, is the posterior.",
-        "For independent yes/no observations with one common probability p, the binomial likelihood is proportional to p to the successes times (1-p) to the failures. A beta prior has density proportional to p to the (a-1) times (1-p) to the (b-1), for p between zero and one. Multiplication therefore gives a beta posterior with updated shape parameters.",
-        "The invented observation is 18 successes in 30 trials, with a beta(2,2) prior. This calculation is exact and does not need Monte Carlo. Establishing the target first gives the later sampling algorithms something known to check. The prior and observation model are assumptions that deserve inspection, especially with limited data."
+        "Bayesian inference describes an uncertain parameter with a distribution. A prior describes it before the selected data. With observed data fixed, the likelihood is a function of the parameter: how probable those data would be at each candidate value. Prior times likelihood, rescaled to total probability one, is the posterior.",
+        "For s successes in n independent yes/no observations, likelihood is proportional to p^s(1−p)^(n−s). A beta(a,b) prior has mean a/(a+b); increasing both shapes at a fixed ratio concentrates it. Beta(2,2) and beta(20,20) both centre at .5, but the latter is narrower. The update gives beta(a+s,b+n−s). With 18/30 and beta(2,2), the posterior is beta(20,14).",
+        "The central 95% posterior, or credible, interval leaves 2.5% of posterior probability below and above its endpoints. Conditional on the prior, data and observation model, it contains 95% posterior probability for p. This differs from a confidence procedure's repeated-sampling coverage. The exact beta calculation supplies a target for later Monte Carlo checks; challenge prior concentration and the independent-observation assumption."
       ],
       "predict": "Will 18 successes out of 30 make the posterior mean exactly $18/30$ under this prior?",
       "look": "The posterior interval concerns the uncertain probability p conditional on this prior, data and likelihood. It is not a range of counts in the next group.",
@@ -2651,7 +2683,8 @@
       "module": 11,
       "code": "69-update-a-probability-with-evidence.py",
       "track": "advanced",
-      "capstone": false
+      "capstone": false,
+      "notation": "a and b are prior shape parameters, s is observed successes and n is observed trials. The posterior mean is (a+s)/(a+b+n); it need not equal the observed success fraction."
     },
     {
       "slug": "sample-a-posterior-directly",
@@ -2664,7 +2697,7 @@
         "SciPy supplies an exact beta survival function for comparison. This benchmark separates numerical approximation error from posterior uncertainty about p. Raising the draw count improves numerical precision; it does not add observations or narrow the exact posterior distribution."
       ],
       "predict": "Does increasing posterior draws from 1,000 to 100,000 supply more observed evidence?",
-      "look": "The posterior SD describes uncertainty in p. MCSE describes numerical error in the estimated posterior event probability. Their units and targets differ.",
+      "look": "Posterior SD describes uncertainty about p; MCSE describes numerical error in the estimated posterior event probability. Both are dimensionless, but their target quantities and interpretations differ.",
       "change": "Estimate $P(p>0.7)$, then compare with stats.beta.sf(.7,a,b).",
       "question": "A posterior mean estimate becomes numerically very precise. What follows?",
       "options": [
@@ -2696,9 +2729,9 @@
       "short": "Implement symmetric-proposal Metropolis while retaining rejected states.",
       "goal": "Implement symmetric-proposal Metropolis while retaining rejected states.",
       "explain": [
-        "A Markov chain generates its next state from its current state. Metropolis proposes a move and accepts it with a probability constructed to preserve a target distribution. For a symmetric proposal, the acceptance ratio is the target density at the proposal divided by that at the current state, capped at one.",
-        "Use log densities to avoid dividing tiny numbers. The beta normalising constant cancels in the ratio. A normal random-walk proposal can land outside the interval zero to one; those proposals have zero target density and are rejected. Clipping them to a boundary would change the proposal and the intended algorithm.",
-        "A rejection means the next state equals the current state. Keep that repeated value in the chain: discarding rejections changes the distribution of recorded states. The initial section is warm-up, which we set aside before estimating a mean. This fixed choice is a teaching convention, not proof of convergence."
+        "A Markov chain generates its next state from its current state. Metropolis proposes a move, then accepts or keeps the current value. A symmetric proposal has equal forward and reverse move densities: normal steps centred on the current value have this property. Its acceptance chance is the candidate target density divided by the current target density, capped at one.",
+        "Stationarity means a whole target distribution is unchanged by one transition when the current state already has that distribution. A valid acceptance rule preserves it; this does not prove approach to it from an arbitrary starting value, called convergence. Use log densities to avoid tiny ratios. Reject out-of-domain proposals; clipping them would change the proposal rule.",
+        "Keep rejected states as repeated values: they are part of the chain. Warm-up is an initial segment set aside to reduce dependence on the chosen start; some algorithms also tune during it. Here its fixed length is a teaching convention, not proof of convergence. Compare the retained mean with the known beta reference and inspect movement, not acceptance fraction alone."
       ],
       "predict": "Should a rejected proposal disappear from the recorded chain?",
       "look": "The trace is a diagnostic view, not a convergence certificate. Repeated states are an essential part of the sampler.",
@@ -2725,7 +2758,8 @@
       "module": 11,
       "code": "71-build-a-metropolis-chain.py",
       "track": "advanced",
-      "capstone": false
+      "capstone": false,
+      "notation": "Current x and proposed y are candidate values of the unknown probability p. The target is beta(20,14); the normal proposal supplies a step from x, not a new independent posterior draw."
     },
     {
       "slug": "correct-an-asymmetric-proposal",
@@ -2733,9 +2767,9 @@
       "short": "Include the reverse-to-forward proposal ratio in Metropolis–Hastings.",
       "goal": "Include the reverse-to-forward proposal ratio in Metropolis–Hastings.",
       "explain": [
-        "A symmetric random walk makes forward and reverse proposal densities equal. Other proposals require an additional correction. Metropolis–Hastings accepts using the target ratio multiplied by the reverse proposal density divided by the forward proposal density, capped at one.",
-        "An independence proposal draws from a fixed distribution q regardless of the current state. The forward density is q(proposal) and the reverse density is q(current). Although the draw is independent of the current state, these two densities need not be equal. Ignoring their ratio generally changes the stationary distribution.",
-        "Here q is beta(3,3), and the target remains beta(20,14). The chain still records rejections and sets aside a starting segment. Comparing with the known mean is a useful implementation check, but one matching mean cannot validate an entire sampler or prove exploration."
+        "Let x be current and y proposed. $q(y\\mid x)$ is the density of proposing y from x; $q(x\\mid y)$ is the reverse density. For target density π, Metropolis–Hastings uses target ratio π(y)/π(x) times reverse/forward proposal density, capped at one. In a symmetric walk those proposal densities cancel.",
+        "An independence proposal draws from fixed q regardless of x. Then the forward density is q(y) and reverse density q(x); they can differ even though the draw does not depend on x. Omitting the correction generally changes the stationary distribution, the distribution preserved by a transition. Here proposal beta(3,3) is corrected back to target beta(20,14).",
+        "Retain rejections and set aside a starting segment as before. Irreducibility means the transition can reach relevant target regions, possibly over several steps; a density ratio cannot repair an unreachable region. One matching mean is an implementation check, not proof that the sampler explored the whole target."
       ],
       "predict": "Does drawing an independence proposal make the proposal-density correction unnecessary?",
       "look": "The proposal correction uses current over proposed density for an independence sampler. Reversing that ratio implements a different algorithm.",
@@ -2762,7 +2796,8 @@
       "module": 11,
       "code": "72-correct-an-asymmetric-proposal.py",
       "track": "advanced",
-      "capstone": false
+      "capstone": false,
+      "notation": "The vertical bar reads ‘given’. Here $\\pi$ is target density, not the circle constant; q is proposal density. An independence proposal uses q(x)/q(y) as its reverse/forward factor."
     },
     {
       "slug": "update-one-conditional-at-a-time",
@@ -2772,7 +2807,7 @@
       "explain": [
         "Gibbs sampling updates components by drawing from their conditional distributions given the other components. Exact conditional draws require no Metropolis rejection step. The resulting sequence is still a Markov chain and its successive states are usually dependent.",
         "For a zero-mean bivariate normal with unit marginal variances and correlation rho, X given $Y=y$ is normal with mean $\\rho y$ and variance 1-rho squared. The conditional for Y is analogous. First update X from the current Y, then update Y from the newly drawn X.",
-        "The code records a state after both coordinate updates, called a sweep here. Strong correlation can slow movement along a narrow joint distribution even though every conditional draw is accepted. The known means and covariance supply checks; they do not make correlated draws independent."
+        "The code records a state after both coordinate updates, called a sweep here. Strong correlation can slow movement along a narrow joint distribution even though every conditional draw is accepted. The known means and covariance supply checks; they do not make correlated draws independent. Lag-one correlation compares neighbouring retained states: the recorded sequence with a copy shifted by one row. A large value warns that rows supply less independent information."
       ],
       "predict": "In the second update of a sweep, should Y condition on the old X or the newly drawn X?",
       "look": "Conditioning uses the latest state. The lag correlation warns against treating the kept row count as an independent sample count.",
@@ -2807,9 +2842,9 @@
       "short": "Estimate a mean-specific effective sample size rather than using the independent-draw SE.",
       "goal": "Estimate a mean-specific effective sample size rather than using the independent-draw SE.",
       "explain": [
-        "Autocorrelation describes dependence between a sequence and a lagged version of itself. For a stationary sequence with appropriate finite moments and summable dependence, the variance of its mean includes contributions from all those lag correlations. The independent-draw standard error omits them.",
-        "Effective sample size for a particular mean expresses this variance in independent-draw equivalents. It depends on the statistic: the mean of a parameter, its square and a tail indicator can have different effective sizes. An estimate based on one chain can also be unstable.",
-        "Use a stationary normal autoregression as a controlled teaching sequence, not a posterior sampler. Its next value equals rho times the previous value plus fresh noise with SD sqrt(1-rho squared). The code estimates autocorrelations by FFT and truncates paired positive lag sums. This simplified routine is for inspecting mean error, not a replacement for modern multi-chain diagnostics."
+        "Autocorrelation compares a sequence with itself shifted by a lag: lag 1 pairs neighbours, lag 2 pairs values two steps apart. Stationarity means their joint distribution does not change with the position in the sequence. For a stationary sequence with finite variance and sufficiently decaying correlations, the mean's variance includes these lag contributions.",
+        "The correlation-time factor τ is 1+2×(lag-1 correlation+lag-2 correlation+…). Count only positive lags; their correlation values can have either sign. If the correlations are .5, .25, .125,…, they sum to 1, so τ=3: N rows provide about N/3 independent-draw equivalents for this mean. Mean ESS≈N/τ and mean SE≈outcome SD/sqrt(ESS). A tail indicator can have a different ESS.",
+        "Use the supplied AR(1), a first-order autoregression: next=ρ×previous+fresh normal noise with SD sqrt(1−ρ²). The initial standard normal draw makes this toy sequence stationary. At ρ=.9, the exact correlation sum gives τ=(1+ρ)/(1−ρ)=19 and large-sample ESS≈N/19. The code calculates sample lag correlations directly, adding successive pairs until a nonpositive pair or the stated lag cap; the cutoff is an approximation, not a convergence test."
       ],
       "predict": "For positively correlated draws, will the iid formula usually overstate or understate mean precision?",
       "look": "The known AR(1) approximation gives a reference for this experiment. ESS is not a guarantee that an arbitrary MCMC chain reached its target.",
@@ -2826,7 +2861,7 @@
         "Replace the parameter by a threshold indicator.",
         "Ask whether that new series has the same autocorrelation."
       ],
-      "limit": "The simplified single-chain ESS assumes stationarity and suitable moments. It does not diagnose warm-up, missed modes or tail ESS.",
+      "limit": "This simplified calculation is for positively correlated, stationary AR(1) draws with finite variance. The lag cap can miss long dependence and τ is floored at 1. Negative correlations can legitimately give ESS greater than N, so this is not a general ESS routine. It does not diagnose warm-up, missed modes or tail accuracy.",
       "source": [
         "Vehtari et al. · Improved R-hat and MCMC diagnostics",
         "https://arxiv.org/abs/1903.08008"
@@ -2836,7 +2871,8 @@
       "module": 11,
       "code": "74-account-for-serial-dependence.py",
       "track": "advanced",
-      "capstone": false
+      "capstone": false,
+      "notation": "$\\tau$ is the mean's correlation-time factor, N is retained row count, s is sample outcome SD and ESS is the independent-draw equivalent for this specific mean."
     },
     {
       "slug": "compare-multiple-chains",
@@ -2844,9 +2880,9 @@
       "short": "Compute rank-normalised and folded split R-hat and explain its diagnostic limits.",
       "goal": "Compute rank-normalised and folded split R-hat and explain its diagnostic limits.",
       "explain": [
-        "Multiple chains from dispersed starting points can expose disagreement that one trace misses. Split R-hat compares within-chain variation with between-chain variation after splitting each chain in half. Values near one suggest agreement for the features examined, not proof of convergence or target coverage.",
-        "Modern diagnostics rank-normalise the pooled split draws to improve robustness, and also examine folded deviations from the pooled median to reveal scale differences. The reported diagnostic is the larger of these two R-hat values. The code implements those steps on two controlled collections of draws.",
-        "One collection consists of independent standard normal draws; in the other, one chain has twice the scale. These are constructed diagnostic examples, not actual posterior chains. A practical workflow combines dispersed-chain agreement, bulk and tail ESS, trace and energy/geometry diagnostics where applicable, and checks against the model. No universal threshold certifies every target."
+        "Run multiple chains from dispersed starting points. Split R-hat compares variation within each half-chain against disagreement between halves. Splitting makes an early/late drift easier to detect. Near-one values suggest agreement in the feature compared, not convergence or coverage of every target region.",
+        "Rank-normalisation pools all split draws, assigns ranks, then converts rank fractions to standard-normal quantiles. For sorted values `[1,2,4,9]`, ranks r are `[1,2,3,4]`. With N=4 entries, the code uses $u=(r-.375)/(N+.25)$, giving approximately `[.147,.382,.618,.853]` before normal quantiles. Folding takes absolute distance from the pooled median: median 3 gives `[2,1,1,6]`. Rank those distances to expose scale disagreement. Ties receive average ranks; the code flattens entries to rank them, then reshapes ranks back into chain rows.",
+        "Report the larger rank and folded split R-hat. The code compares invented independent normal draws with a second collection whose fourth chain has twice the scale; these are diagnostic examples, not posterior traces. Also inspect traces, target knowledge and statistic-specific error. Bulk ESS (central behaviour), tail ESS and sampler-specific energy diagnostics are further-study topics, outside this calculation."
       ],
       "predict": "Could chains have similar means yet disagree about the distribution’s scale?",
       "look": "The folded comparison exposes the deliberately changed scale. Neither collection demonstrates real MCMC exploration of a difficult posterior.",
@@ -2883,7 +2919,7 @@
       "explain": [
         "Posterior predictive sampling first draws a parameter from its posterior, then draws new observations conditional on that parameter. The resulting distribution accounts for parameter uncertainty and future outcome variability under the model. It is distinct from the posterior distribution of the parameter alone.",
         "For the beta-binomial example, draw p from beta(20,14), then generate a future count among 20 observations with that p. Plugging the posterior mean directly into a binomial omits uncertainty in p. Both have the same expected count here, but the predictive mixture has greater variance.",
-        "The beta-binomial distribution gives an exact predictive mean and variance to check this simulation. Predictive checks compare features of replicated data with the observed data to reveal model mismatch. They are model criticism tools, not automatic proof that a prior or likelihood is correct, and a posterior predictive tail comparison is not automatically a calibrated frequentist p-value."
+        "The beta-binomial distribution gives an exact predictive mean and variance to check the simulation. Predictive checks compare features of replicated and observed data to reveal mismatch. A tail comparison under the fitted predictive model can be useful criticism, but does not by itself validate the prior or observation model. Keep numerical accuracy separate from model adequacy."
       ],
       "predict": "Can the plug-in and full predictive distributions share a mean but have different spreads?",
       "look": "Count quantiles describe future group outcomes; p quantiles describe a parameter. Neither is the numerical error bar on an estimated mean.",
@@ -2920,9 +2956,9 @@
       "short": "Compare capacity choices and five-year cost under shared uncertain demand.",
       "goal": "Compare capacity choices and five-year cost under shared uncertain demand.",
       "explain": [
-        "Sizing is a decision about a policy under demand uncertainty. Distinguish useful work, measured sustainable capacity, reserve margin and discrete purchase counts before calculating a price. This optional workbook uses invented capacities and prices to demonstrate a model, not recommend a supplier.",
-        "Each world contains an initial daily demand, one annual growth rate and an energy price. All options see those same inputs. A fixed fleet is selected now and held for five years; unmet capacity is reported rather than silently buying extra machines mid-trial. Capital and electricity are the stated cost boundary.",
-        "Report both capacity failure probability and a cost distribution. A low expected cost can be unattractive when it fails the demand requirement. More simulation trials refine these conditional summaries; they do not verify benchmark capacity, future growth or purchasing assumptions. Extend the boundary explicitly when adding staffing, support, depreciation or replacements."
+        "Sizing selects installed capacity under uncertain demand. Total cost of ownership (TCO) totals the costs inside a stated boundary; here it includes capital purchase (capex) and electricity over five years. Capacity is useful work per day. Reserve leaves headroom: the .8 factor makes only 80% of sustainable capacity available to the planned load. Prices and capacities are invented.",
+        "One small-fleet world with 8 units gives 8×220×.8=1,408 work units/day of usable capacity. Power is a rate in kilowatts (kW); energy is power times time in kilowatt-hours (kWh). At .25 kW each, 8 units use 17,520 kWh/year. At an invented £.20/kWh, five-year electricity is £17,520; adding £40,000 purchase gives £57,520. The code varies the shared world inputs, not this arithmetic.",
+        "Each world draws initial daily demand, one annual growth rate g and an energy price. Year t demand multiplies the initial value by (1+g)^t: growth compounds on earlier growth. The fleet stays fixed for five years; shortfalls are reported, not silently repaired by purchases. Costs are nominal undiscounted totals: no conversion of future payments to today's value. Staffing, support, replacements and financing require an explicit extension."
       ],
       "predict": "Should a cheaper option with insufficient capacity appear feasible merely because its mean cost is low?",
       "look": "The required-unit diagnostic describes demand; it does not change the fixed fleet policy or its cost. Costs are nominal undiscounted five-year totals.",
@@ -2949,7 +2985,8 @@
       "module": 12,
       "code": "application-sizing-and-total-cost.py",
       "track": "application",
-      "capstone": false
+      "capstone": false,
+      "notation": "The code's required-unit diagnostic rounds up demand divided by usable capacity per unit; it does not buy those units during a trial. Any capacity failure means at least one of the five years fails."
     },
     {
       "slug": "migration-deadline-and-budget",
@@ -2957,9 +2994,9 @@
       "short": "Link a migration schedule to the cost of running old and new systems together.",
       "goal": "Link a migration schedule to the cost of running old and new systems together.",
       "explain": [
-        "Migration risk couples schedule and money. Workstreams may run in parallel, while validation cannot start until they finish. A simple common complexity factor can make their durations dependent rather than allowing every difficulty to average away.",
-        "This workbook models two parallel preparation tasks followed by validation. Parallel running incurs a daily cost until completion, then an explicit fixed transition cost is added. Three policies use the same task worlds: standard, extra staff and a smaller first release. Policy effects are invented assumptions, not measured productivity improvements.",
-        "Evaluate deadline and budget together. The fraction that meets both is not generally the product of their separate probabilities: a longer migration itself creates more parallel-running cost. A later, more detailed model might include failed cutovers, rollback, contractual deadlines or staged retirement. Start with a small schedule whose arithmetic you can inspect."
+        "Migration couples schedule and money. Two preparation tasks run concurrently, then validation starts after both finish: duration is max(A,B)+validation. A common complexity factor can slow both tasks together. A separate idea, parallel or dual running, means operating the old and replacement services at the same time until migration completes.",
+        "This workbook charges an invented £1,800 for each day of dual running, plus a fixed transition cost. Three policies share task worlds: standard, extra staff and a smaller first release. Their supplied speed multiplier changes preparation, not validation. At 20 days the standard policy costs £15,000+20×£1,800=£51,000. These effects and prices are teaching assumptions.",
+        "Test deadline and budget jointly within each world. Their separate success fractions cannot generally be multiplied, because a longer migration costs more. A cutover switches users to the replacement; rollback returns them to the old service if that switch fails. Those events are possible extensions, not simulated here. Keep the small schedule and cost boundary inspectable before adding them."
       ],
       "predict": "If longer duration directly increases cost, can deadline and budget success be multiplied as independent events?",
       "look": "The joint success indicator keeps each world’s duration and cost together. Multiplying marginal success rates would erase their connection.",
@@ -2986,7 +3023,8 @@
       "module": 12,
       "code": "application-migration-deadline-and-budget.py",
       "track": "application",
-      "capstone": false
+      "capstone": false,
+      "notation": "In the illustration, T is completion time, C is cost, d is the deadline and b is the budget; $\\land$ means both conditions hold and the indicator is 1 only for joint success."
     },
     {
       "slug": "gpu-job-and-checkpoint-economics",
@@ -2994,9 +3032,9 @@
       "short": "Account for useful work, checkpoint overhead and lost work under interruption.",
       "goal": "Account for useful work, checkpoint overhead and lost work under interruption.",
       "explain": [
-        "Checkpointing trades regular overhead for less lost work after interruption. A useful comparison holds required useful computation fixed. Treating overhead as useful progress or charging only successful segments would understate completion time and cost.",
-        "This deliberately simplified model divides a 20-hour useful job into equal chunks. Each attempt runs until interruption or chunk completion. A successful chunk pays a checkpoint overhead, including the final chunk by the stated convention. Failed attempts lose all progress in that chunk. Exponential interruption times assume a constant hazard during computation; checkpoints are assumed interruption-free.",
-        "Use the same uniform random numbers for corresponding attempts under each policy. Each trial is a complete job with retries. Bill elapsed computation plus checkpoint time at a fixed invented hourly rate. This is a model of economics, not a hardware benchmark: actual throughput, checkpoint time, failure process and pricing need evidence. An attempt cap makes a coding error or extreme model fail visibly."
+        "A checkpoint saves completed progress so a job can resume there after interruption. Saving takes overhead time without advancing useful computation. Frequent saves lose less work on failure but incur more overhead. Compare policies for the same twenty hours of useful work, charging all elapsed computation and save time.",
+        "The model splits work into chunks. Suppose a 2-hour chunk fails after .6 hours, then the retry finishes in 2 hours and pays .05 hours to checkpoint: elapsed time is .6+2+.05=2.65 hours for 2 useful hours. An unsuccessful attempt loses that chunk's progress. The final successful chunk also pays overhead by convention; checkpoint saves themselves cannot be interrupted here.",
+        "Each complete-job trial uses retries until all useful chunks finish. Exponential interruption times have constant hazard, the conditional interruption rate while still computing; their supplied mean is 8 compute hours, so the hazard is 1/8 per compute hour. Shared uniform inputs match corresponding attempts across policies. Bill elapsed time at the invented hourly rate, with no restart delay and an attempt cap that fails visibly if exhausted. Real throughput, failures and pricing need evidence."
       ],
       "predict": "Will the shortest checkpoint interval always minimise billed time?",
       "look": "Elapsed time includes failed attempts and successful checkpoint overhead. Useful completed work remains exactly 20 hours for every policy.",

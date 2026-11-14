@@ -9,11 +9,14 @@ x[0] = rng.normal()
 for i in range(1,n):
     x[i] = rho*x[i-1]+np.sqrt(1-rho*rho)*rng.normal()
 centred = x-x.mean()
-spectrum = np.fft.rfft(centred,n=2*n)
-acov = np.fft.irfft(spectrum*np.conj(spectrum))[:n]/n
-acf = acov/acov[0]
+# Inspectable lag correlations; no Fourier-transform machinery is needed.
+max_lag = 200  # A teaching cutoff; very long dependence needs a longer analysis.
+denominator = np.sum(centred**2)
+acf = np.ones(max_lag+1)
+for lag in range(1, max_lag+1):
+    acf[lag] = np.sum(centred[:-lag]*centred[lag:])/denominator
 tau = -1.
-for lag in range(0,n-1,2):
+for lag in range(0,max_lag,2):
     pair = acf[lag]+acf[lag+1]
     if pair <= 0: break
     tau += 2*pair

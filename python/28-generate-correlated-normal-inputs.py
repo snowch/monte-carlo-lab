@@ -3,10 +3,12 @@
 import numpy as np
 rng = np.random.default_rng(2027)
 
-correlation = np.array([[1.0, .7], [.7, 1.0]])
-factor = np.linalg.cholesky(correlation)
+rho = .7
+assert -1 <= rho <= 1, "Correlation must lie between -1 and 1"
 z = rng.normal(size=(20000, 2))
-paired = z @ factor.T
+a = z[:, 0]
+b = rho*a + np.sqrt(1-rho*rho)*z[:, 1]
+paired = np.column_stack([a, b])  # Put the two inputs into columns.
 cost_a = 100 + 10*paired[:, 0]
 cost_b = 80 + 8*paired[:, 1]
 print("Sample standardised covariance:")

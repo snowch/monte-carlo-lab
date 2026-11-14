@@ -119,6 +119,7 @@ function initializeLesson(lesson){
  const initialQuiz=get(`draft:${slug}:quiz`);
  const draftKey=id=>`draft:${slug}:${id}`;
  $('code').value=get(draftKey('code'),initialCode);
+ $('saved-draft-note').hidden=$('code').value===initialCode;
  const refreshEditor=attachEditor($('code'));
  document.querySelectorAll('[data-save]').forEach(el=>{
   el.value=get(draftKey(el.dataset.save));
@@ -139,7 +140,7 @@ function initializeLesson(lesson){
   if(event.key==='Tab'&&!event.shiftKey){event.preventDefault();const start=event.target.selectionStart,end=event.target.selectionEnd;event.target.setRangeText('    ',start,end,'end');event.target.dispatchEvent(new Event('input'))}
   if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();if(!busy)run()}
  });
- $('restore').addEventListener('click',()=>{$('code').value=initialCode;refreshEditor();put(draftKey('code'),initialCode);stale();$('status').textContent='Published example restored. Run to get fresh output.'});
+ $('restore').addEventListener('click',()=>{$('saved-draft-note').hidden=true;$('code').value=initialCode;refreshEditor();put(draftKey('code'),initialCode);stale();$('status').textContent='Published example restored. Run to get fresh output.'});
  $('download-code').addEventListener('click',()=>download(slug+'.py',$('code').value,'text/x-python'));
  $('export-run').addEventListener('click',()=>{
   if(!lastRun)return;

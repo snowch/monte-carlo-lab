@@ -197,3 +197,54 @@ Evidence is in test-results/lesson-zero-*.png (local test artifacts). These are
 author and functional checks, not novice learner validation. The earlier concept
 audit remains a baseline record; this change does not claim to resolve all its
 other findings.
+
+## 2026-11-14 — concept audit repairs and illustrated homepage
+
+Implemented a remedy for all 60 Gap/Sequence/Support items from the baseline
+concept audit. The page-by-page closure is in
+[concept-remediation.md](concept-remediation.md); the original findings remain
+available with a link to that implementation record. Retained optional lesson 0
+and the 76-lesson progress denominator.
+
+Applied the repository learning-design and UX skills before writing and after
+reviewing the essential route with optional help closed. Definitions and local
+symbol readings precede reference graphics. The opening teaches NumPy shape,
+axes and boolean averaging; the summary lesson uses ten explicit invented
+delays. Correlated inputs use an inspectable scalar construction. Confidence
+coverage/tail conventions, fitting parameters, conditional state selection,
+queue load, bias, stable weighting, Bayesian intervals and MCMC diagnostics
+have worked bridges. Workbooks introduce their cost/energy, migration and
+checkpoint vocabulary at first use. Removed the duplicate paragraph in 17 and
+corrected the dimensionless-units claim in 70. Advanced log/density prerequisites
+remain explicit, and further-study diagnostics remain optional.
+
+The changed numerical examples execute independently. Added native checks for
+tail-value effects on mean/median/P90, marginal variance/correlation preservation,
+invalid input rejection and the stationary AR(1) lag/ESS reference. The new lag
+calculation states its positive-correlation scope, cap and floor. Saved code
+drafts remain intact; a quiet note explains how Tools can download or restore a
+current example. Browser coverage exercises that recovery path and checks that
+references follow their explanations.
+
+The original possible-event illustration and dark indigo introduction form
+part of a coordinated three-lab design. The user-provided Common Ground
+screenshot guided the composition; SVG artwork was authored locally. Its shapes
+represent concepts, with no quantitative execution result claimed. Large
+reading text, one starting action, optional preparation, search and progress
+remain. The graphic scales without external image or font requests.
+
+Verification: 15 native tests passed across 80 sources. Build/link checks passed
+for 82 learning pages and 7,892 relative links/fragments. The full real-Wasm suite
+passed all 80 examples against native results, CSV/run/report/progress export,
+saved drafts, error/Stop recovery, no-JavaScript reading, both themes, every page
+at 320/390px, 200% text and 820/1024px navigation. A phone check caught unbreakable
+inline method/arithmetic text in 17/33; these were rewritten and the complete
+narrow-page pass repeated. Final mathematical typesetting changes received
+focused rebuild/reflow checks. Shared hero controls were checked again after
+the final styling changes.
+
+All three homepages were captured at 320/390/820/1440px and checked at 200% text;
+artwork text stays within its SVG view box. Inspected phone, tablet, desktop and
+dark-theme captures plus representative repaired lessons. Local evidence is in
+test-results/hero-*.png and prerequisite-*-phone.png. These are author,
+mathematical and functional checks, not evidence of novice learning gains.

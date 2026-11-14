@@ -1,6 +1,6 @@
 # Learning design
 
-Audience: people who can read Python variables, arrays, function calls and a short loop. No prior simulation or Bayesian inference is assumed. Probability, expectation and conditioning are introduced before later algorithms use them. Advanced modules assume the core route, comfort with logarithms and an introductory understanding of probability densities; reference notes supply the needed notation.
+Audience: people who can read basic Python variables, lists, function calls and a short loop. NumPy arrays and their operations are introduced in lessons 1–2. No prior simulation or Bayesian inference is assumed. Probability, expectation and conditioning are introduced before later algorithms use them. Advanced modules assume the core route, comfort with logarithms and an introductory understanding of probability densities; reference notes supply the needed notation.
 
 Practical outcomes: translate a decision into a trial; specify and challenge input assumptions; implement a repeatable simulation; distinguish outcome spread, numerical error and input/model uncertainty; represent dependence and time; compare policies; validate an estimator against a solvable reference; communicate an auditable conditional claim. Advanced learners additionally construct weighted and Markov-chain estimators and assess their limitations.
 
@@ -75,3 +75,36 @@ reports, provenance, cancellation and the existing accessible recovery paths.
 Review reference label bounds and equation fit on small screens, plus actual
 plots in light/dark reading layouts. Author/browser checks do not demonstrate
 learning effectiveness.
+
+## 2026-11-14 — prerequisite repairs and illustrated entry
+
+Keep the essential route readable with optional panels closed. The homepage
+will pair one clear starting action with a bespoke course illustration: an
+experiment notebook for Scientific Method, possible-event tickets for Monte
+Carlo and an algebra area model for SymPy. The scene is an explanatory course
+identity, not an execution result or measured evidence. Use crisp scalable
+vectors, readable text, labelled shapes and a restrained shared composition;
+stack artwork below the introduction on phones and retain progress/search,
+keyboard controls, reduced-motion support and independent deployment.
+
+Address every Gap, Sequence and Support item in docs/concept-audit.md. Rewrite
+short explanations at first use; preserve one outcome, a small example and a
+fresh application. Place diagrams after their prerequisite prose and give local
+symbol keys. Explain the tiny array/axis operation in lesson 2, use explicit
+invented delays to teach summaries in 4, and use a scalar two-normal construction
+in 28/30 instead of requiring matrix algebra. Teach interval coverage and tails,
+parameter mappings, state cutoffs, queue load and estimator bias before using
+them. Advanced bridges cover mixture density, stable weights, ratio consistency,
+Bayesian parameters, stationarity, lag-specific error and rank/fold diagnostics.
+Replace the FFT implementation with an inspectable lag calculation, retaining
+its statistical assumptions and limitations. Workbooks get domain definitions
+and one concrete units/time ledger. Retain lesson identities, optional Lesson 0,
+all learning activities, existing data provenance and separate reading marks.
+
+Likely misconceptions include density height as point probability, a percentile
+as a confidence interval, covariance as an unexplained matrix operation,
+unbiasedness as exactness of one run, stationarity as proven convergence and a
+near-one diagnostic as proof of exploration. Reconcile the basic-Python audience
+contract across learner/author notes. Record each original finding and its
+remedy, numerical/functional checks and any remaining evidence limits in the
+remediation record. Author review is not a novice learner study.

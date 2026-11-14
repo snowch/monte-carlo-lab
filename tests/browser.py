@@ -64,6 +64,16 @@ try:
         page.locator('#search').fill('no-such-topic-zzzz')
         assert page.locator('#search-empty').is_visible()
         page.locator('#search').fill('')
+        # A revision must preserve an existing learner draft while making the
+        # current teaching example recoverable without silently replacing it.
+        page.evaluate("localStorage.setItem('mcl:v1:draft:see-the-outcomes-before-the-headline:code',\"print('saved learner work')\")")
+        visit(page,BASE+'lessons/see-the-outcomes-before-the-headline.html')
+        assert page.locator('#code').input_value()=="print('saved learner work')"
+        assert page.locator('#saved-draft-note').is_visible()
+        restore_example(page)
+        assert 'delay = np.array' in page.locator('#code').input_value()
+        assert not page.locator('#saved-draft-note').is_visible()
+        visit(page,BASE)
         # The optional preparation page is executable and portable, but never
         # changes the existing course count or lesson identities.
         assert page.locator('#lesson-zero-link').get_attribute('href')=='lessons/probability-essentials.html'
@@ -127,6 +137,7 @@ try:
             if i==0:
                 assert page.locator('#plots img').count()==1
                 assert page.locator('.concept-figure').is_visible()
+                assert page.locator('.concept-figure').evaluate('e=>[...e.parentElement.children].filter(x=>x.tagName==="P").every(x=>Boolean(x.compareDocumentPosition(e)&Node.DOCUMENT_POSITION_FOLLOWING))'),('diagram precedes explanation',lesson['slug'])
                 assert page.locator('.lab-workspace .worked').count()==1
                 assert page.locator('#plots a').get_attribute('href').startswith('blob:')
                 page.screenshot(path=str(RESULTS/'lesson-desktop.png'),full_page=True)
@@ -223,6 +234,7 @@ try:
                 visit(page,BASE+'lessons/'+lesson['slug']+'.html')
                 assert page.locator('h1').inner_text()==lesson['title']
                 assert page.locator('.concept-figure').is_visible()
+                assert page.locator('.concept-figure').evaluate('e=>[...e.parentElement.children].filter(x=>x.tagName==="P").every(x=>Boolean(x.compareDocumentPosition(e)&Node.DOCUMENT_POSITION_FOLLOWING))'),('reference precedes definitions',lesson['slug'])
                 clipped=page.locator('.concept-figure svg:visible').evaluate_all('''svgs=>svgs.flatMap(svg=>{const f=svg.getBoundingClientRect();return [...svg.querySelectorAll('text')].flatMap(t=>{const r=t.getBoundingClientRect();return r.left<f.left-1||r.right>f.right+1||r.top<f.top-1||r.bottom>f.bottom+1?[t.textContent]:[]})})''')
                 assert not clipped,('diagram label',width,lesson['slug'],clipped)
                 assert not page.locator('.concept-figure .math-display:visible').evaluate_all('els=>els.some(e=>e.scrollWidth>e.clientWidth+1)'),('equation fit',width,lesson['slug'])

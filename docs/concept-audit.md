@@ -2,6 +2,10 @@
 
 Reviewed 2026-11-13 against commit **f9b0ce0**.
 
+**2026-11-14 implementation:** the [remediation record](concept-remediation.md)
+tracks a source remedy for all 60 flagged items. The table below is retained as
+the original baseline, not the status of the revised course.
+
 Follow-up: optional Lesson 0, Probability essentials, and short first-use
 definitions in lesson 1 were added after this baseline review. The status counts
 below describe the reviewed commit; they have not been presented as a fresh
