@@ -108,3 +108,11 @@ near-one diagnostic as proof of exploration. Reconcile the basic-Python audience
 contract across learner/author notes. Record each original finding and its
 remedy, numerical/functional checks and any remaining evidence limits in the
 remediation record. Author review is not a novice learner study.
+
+## Lesson 00 in the course contents
+
+Show the optional probability refresher as a numbered 00 row before module 1.
+Use the existing lesson-row typography, search and reading marker; label it
+optional and retain the main 76-lesson denominator. Keep the direct lesson-1
+start action and existing sidebar entry. Check title search, row order, narrow
+layout and reading status without creating a second module or a new card.

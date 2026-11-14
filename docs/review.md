@@ -248,3 +248,19 @@ artwork text stays within its SVG view box. Inspected phone, tablet, desktop and
 dark-theme captures plus representative repaired lessons. Local evidence is in
 test-results/hero-*.png and prerequisite-*-phone.png. These are author,
 mathematical and functional checks, not evidence of novice learning gains.
+
+## 2026-11-14 — lesson 00 in the contents
+
+Added the optional Probability essentials lesson as row 00 before module 1.
+It uses the existing row typography, duration and saved reading marker; the
+standalone title has heading level 3 under Course contents. It participates in
+title/body search, with an accurate 80-row result count. Main reading progress
+remains 76 lessons and the direct start, hero link and sidebar are retained.
+
+Applied the repository learning-design and UX skills to placement and hierarchy.
+Build and link checks passed for 82 pages and 7,893 relative links/fragments.
+Focused browser checks passed at 320/390/820/1440px for row order, optional label,
+search/empty/reset states, navigation and a saved 00 reading mark alongside
+0/76 main progress. Inspected the phone contents capture. Updated the existing
+browser regressions for the additional row; CI runs the complete suite before
+publication. This navigation check is not a learner study.

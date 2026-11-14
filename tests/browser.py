@@ -48,7 +48,16 @@ try:
         context.route('**/*',lambda route:route.continue_() if route.request.url.startswith('http://127.0.0.1:5186/') or route.request.url.startswith(('data:','blob:')) else route.abort())
         page=context.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         visit(page,BASE)
-        assert page.locator('.lesson-row').count()==79
+        assert page.locator('.lesson-row').count()==80
+        first=page.locator('#course .lesson-row').first
+        assert first.locator('.lesson-number').inner_text()=='00'
+        assert first.get_attribute('href')=='lessons/probability-essentials.html'
+        assert 'Optional' in first.locator('.lesson-time').inner_text()
+        page.locator('#search').fill('probability essentials')
+        assert page.locator('.lesson-row:visible').count()==1
+        assert first.is_visible()
+        assert page.locator('#search-count').inner_text()=='1 investigation'
+        page.locator('#search').fill('')
         assert page.locator('.lesson-row h4').first.evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')>=17
         assert page.locator('#start-course').evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')>=16
         assert page.evaluate('getComputedStyle(document.documentElement).backgroundColor')=='rgb(249, 250, 252)'
@@ -60,7 +69,7 @@ try:
         page.locator('#course-example > summary').click()
         page.screenshot(path=str(RESULTS/'overview-desktop.png'),full_page=True)
         page.locator('#search').fill('confidence')
-        assert 0<page.locator('.lesson-row:visible').count()<79
+        assert 0<page.locator('.lesson-row:visible').count()<80
         page.locator('#search').fill('no-such-topic-zzzz')
         assert page.locator('#search-empty').is_visible()
         page.locator('#search').fill('')
@@ -99,6 +108,7 @@ try:
         assert page.locator('.lesson-pagination a').first.get_attribute('href')=='probability-essentials.html'
         visit(page,BASE)
         assert page.locator('#progress-count').inner_text()=='0 / 76 read'
+        assert page.locator('#course .lesson-row').first.locator('[data-read]').inner_text()=='✓ Read'
         page.evaluate("localStorage.setItem('mcl:v1:read:will-the-room-be-full','true')")
         visit(page,BASE)
         assert page.locator('#start-label').inner_text()=='Continue learning'
