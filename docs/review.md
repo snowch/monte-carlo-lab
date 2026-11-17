@@ -264,3 +264,33 @@ search/empty/reset states, navigation and a saved 00 reading mark alongside
 0/76 main progress. Inspected the phone contents capture. Updated the existing
 browser regressions for the additional row; CI runs the complete suite before
 publication. This navigation check is not a learner study.
+
+## 2026-11-17 — experiment instructions and run recovery
+
+Applied the learning-design and UX skills to lessons 14, 38, 50 and the
+capstone. Lesson 14 defines root mean square error and identifies the two
+batch sizes to compare after the edit. Lesson 38 shows the state proportions
+at steps 1, 5 and 20 for either start. Lesson 50 exposes the shortage limit and
+reports when the set of feasible tested options is empty. Each original run
+cue is visible before the editor, and the result instructions name the fields
+learners need to inspect.
+
+The capstone shows CSV requirements beside the picker and distinguishes the
+selected input, a failed attempt and the last successful result. Restoring the
+published example keeps the most recently replaced draft for recovery. A failed
+execution displays its own message and leaves successful output, plots and
+exports available.
+
+Chromium walkthroughs exercised the original lessons, each stated edit and the
+capstone’s CSV and error path at 390px in dark mode and at 1280px in light mode.
+Checked reflow at both widths in both themes with optional panels closed.
+Browser regressions cover keyboard focus for Run, Stop and pending file reads,
+long filenames wrapping in the result, and draft recovery after reload and
+import. Following a rejected CSV,
+the tests recovered the exact successful input, source and output from JSON
+and Markdown. The input fixture includes a UTF-8 byte-order mark, CRLF line
+endings and a trailing newline. The source includes Markdown fence characters.
+The full check passed 15 native tests, all 80 real-Wasm examples, and 7,893
+relative links and fragments across 82 pages.
+
+These are functional and author checks. No learner study measured understanding.

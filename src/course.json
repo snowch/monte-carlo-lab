@@ -597,11 +597,11 @@
       "explain": [
         "For independent identically distributed draws with finite variance, the sample mean approaches the model expectation as the sample grows. This law-of-large-numbers statement does not say that every additional draw moves the estimate closer to the answer. The abbreviation i.i.d. means independent and identically distributed. Identically distributed means every draw uses the same model. Finite variance means its average squared deviation has a finite value, the condition used by the error rule below.",
         "The standard deviation of the sample mean is the outcome standard deviation divided by the square root of n. Four times as many draws therefore halves that standard deviation under the same model. It is a statement about repeated experiments, not a guarantee for one running trace.",
-        "Here the exact expectation of U squared for U uniform between zero and one is one third. The trace and repeated-batch error calculation let you inspect both convergence and its irregularity. Rare outcomes and heavy tails can make this simple picture difficult or invalid."
+        "The exact mean of the squared uniform draws is one third. Python plots one running estimate and separately simulates 200 batches for each draw count. For each batch, it subtracts one third from the batch mean. It squares those errors, averages the squares, then takes the square root. This root mean square error (RMSE) estimates the typical size of the error across batches."
       ],
       "predict": "Must the running estimate become closer to one third after every new draw?",
-      "look": "The estimate can temporarily move away from the exact value. Error reduction is assessed across repetitions or with a justified error estimate.",
-      "change": "Compare `n=100` and `n=10000`. Predict the typical error ratio before calculating it.",
+      "look": "In the plot, find a place where the running estimate moves away from one third. In the text output, each line gives a draw count (n) and its RMSE across batches.",
+      "change": "In the editor, replace `6400` with `10000` in the batch-size list `[100, 400, 1600, 6400]`. Run Python again. Compare “RMSE across batches” for `n: 100` and `n: 10000` in the new output. With 100 times as many draws, is the error about one tenth as large?",
       "question": "Under the independent finite-variance model, reducing standard error by a factor of ten generally needs what?",
       "options": [
         "Ten times as many runs.",
@@ -625,7 +625,8 @@
       "code": "14-watch-convergence-without-promising-a-winner.py",
       "track": "core",
       "capstone": false,
-      "notation": "$\\overline{U^2}$ means average the squared uniform draws; n is their count. SE denotes the model standard deviation of that average across repeated runs."
+      "notation": "$\\overline{U^2}$ means average the squared uniform draws; n is their count. SE denotes the model standard deviation of that average across repeated runs.",
+      "prepare": "Select Run Python below with the code unchanged."
     },
     {
       "slug": "calculate-monte-carlo-standard-error",
@@ -1495,16 +1496,16 @@
     {
       "slug": "move-between-states",
       "title": "Move between states",
-      "short": "Simulate a Markov transition model and check its probability rows.",
-      "goal": "Simulate a Markov transition model and check its probability rows.",
+      "short": "Use a Markov model to compare how the starting state affects simulated outcomes at different steps.",
+      "goal": "Use a Markov model to compare how the starting state affects simulated outcomes at different steps.",
       "explain": [
         "A Markov model specifies the next-state distribution from the current state. In this first model, the past affects the future only through that state. The transition matrix has one row per current state and one column per next state.",
-        "Turn a transition row into cumulative cutoffs: [.75,.20,.05] gives [.75,.95,1]. A uniform draw .90 falls after .75 but before .95, selecting state 1 (states start at 0). Do this using the current state's row for every path at each step. An assert stops execution when a required check fails; allclose checks equality within a small numerical tolerance.",
+        "The code labels clear, cloudy and wet as states 0, 1 and 2. For a path in the clear state, the row [.75,.20,.05] becomes cumulative cutoffs [.75,.95,1]. A uniform draw of .90 falls between .75 and .95, so the path moves to state 1 (cloudy). The code uses the current state’s row for each path at every step.",
         "A transition matrix does not establish that a real process is Markov or that its probabilities are stable. If the duration already spent in a state changes its transition probability, the state description may need to include that duration. MCMC later uses Markov transitions for a different purpose: numerical sampling from a target distribution."
       ],
       "predict": "Why must each row sum to one rather than the entire matrix?",
-      "look": "All paths start in state 0. Changing the starting distribution can change a finite-horizon result.",
-      "change": "Start every path in state 2 and compare the distribution after one, five and twenty steps.",
+      "look": "The output gives the proportions of clear, cloudy and wet paths at steps 1, 5 and 20. Keep those three rows to compare with the next run.",
+      "change": "In the editor, change `initial_state = 0` to `initial_state = 2`. Run Python again, then compare the clear, cloudy and wet proportions with the first run at steps 1, 5 and 20. At which step does the starting state make the biggest difference?",
       "question": "The chance of leaving a state depends on how long it has already lasted. What should you question?",
       "options": [
         "The adequacy of a state model that omits duration.",
@@ -1527,7 +1528,8 @@
       "module": 6,
       "code": "38-move-between-states.py",
       "track": "core",
-      "capstone": false
+      "capstone": false,
+      "prepare": "Select Run Python below with the code unchanged."
     },
     {
       "slug": "parallel-work-changes-the-critical-path",
@@ -1947,13 +1949,13 @@
       "goal": "Evaluate all choices under matched simulated conditions and explicit constraints.",
       "explain": [
         "A low expected loss does not automatically make an option feasible. A decision can include a service requirement, a spending limit or a physical bound in addition to an optimisation objective.",
-        "Compare stock choices under the same demand draws. Here the requirement is a modelled shortage probability no greater than 0.1. The preferred choice among feasible options is then the one with the lowest expected loss under the stated penalties.",
+        "The code compares stock levels using the same simulated demand draws. A shortage occurs when demand exceeds stock. The example sets the shortage limit to 0.10 (10%). Of the tested levels at or below the limit, the code chooses the one with the lowest expected loss under the stated penalties.",
         "A simulation estimate close to a constraint boundary has numerical uncertainty. Treat feasibility as unresolved when that uncertainty could reverse the decision, and do not turn an estimated probability into a guarantee. Model uncertainty can be larger still, especially when the future demand distribution was assumed."
       ],
       "predict": "Should an option with lower mean loss be accepted if it violates the declared service requirement?",
-      "look": "The table explicitly labels the rule as using point estimates. Near a boundary, calculate numerical uncertainty and test input assumptions.",
-      "change": "Tighten the service requirement from .1 to .02 and report whether any tested option remains feasible.",
-      "question": "No tested option meets the requirement. What should the report say?",
+      "look": "Find `shortage_probability` and `meets_point_estimate_rule` in the table. Which stock levels meet the 10% limit, and which of those has the smallest estimated loss?",
+      "change": "In the editor, replace `max_shortage_probability = 0.10` with `max_shortage_probability = 0.02` and run again. Which tested stock levels still have `True` in `meets_point_estimate_rule`? Then set the limit to `0.005` (0.5%) and rerun. Does any tested level meet the new limit?",
+      "question": "A parcel service tests three delivery schedules. All three have an estimated late-delivery probability above the service limit. What should the report say?",
       "options": [
         "Declare the cheapest one feasible anyway.",
         "State that none of the tested options meets the requirement under the model, then propose alternatives.",
@@ -1976,7 +1978,8 @@
       "code": "50-compare-feasible-options.py",
       "track": "core",
       "capstone": false,
-      "notation": "Feasible means meeting the declared requirements. min gives the smallest loss value; argmin gives the option that achieves it. First filter by the service requirement, then rank the remaining options."
+      "notation": "Feasible means meeting the declared requirements. A point estimate is a single numerical estimate. Here feasibility uses each stock level’s estimated shortage probability.",
+      "prepare": "Select Run Python below with the code unchanged."
     },
     {
       "slug": "inspect-the-downside-as-well-as-the-mean",
@@ -2319,12 +2322,12 @@
       "goal": "Export a reproducible analysis and a scoped decision or uncertainty report.",
       "explain": [
         "Choose a general problem: time and budget, demand and resources, or measurement and reliability. Define the question, target quantity, units, input provenance, dependency assumptions, trial budget and validation checks before interpreting the final result.",
-        "The starter chooses case=inventory, project or measurement. CSV column value holds one positive finite observation per row. Inventory resamples daily demand to compare stock levels and shortage/waste penalties. Project sums five resampled task durations in days, then compares supplied duration multipliers. Measurement resamples radius in centimetres and calculates circle area πr² in square centimetres, where π≈3.14159. Defaults are invented; uploaded rows still need a justification for independent reuse.",
-        "Use the report fields to connect the question, model, evidence, result, uncertainty, limitations and next experiment. Export the exact run JSON and a Markdown report alongside your original input file. A finding that leaves a decision unresolved is valid when its assumptions and limits are clear. Independent investigation time is additional to this guided starter."
+        "The three cases use different units. Inventory resamples daily demand to compare stock levels and shortage and waste penalties. Project sums five resampled task durations in days, then compares the supplied duration multipliers. Measurement resamples radius in centimetres and calculates circle area $\\pi r^2$ in square centimetres. Each case starts with invented observations.",
+        "Use the report fields to connect the question, model, evidence, result, uncertainty, limitations and next experiment. Export the run JSON and Markdown report, and keep the original CSV if you used one. A finding that leaves a decision unresolved is valid when its assumptions and limits are clear. Independent investigation time is additional to this guided starter."
       ],
       "predict": "Can a structurally valid CSV prove that its values represent the future conditions you care about?",
-      "look": "The input label changes when a CSV is used. The simulation count does not increase the amount of observed input evidence.",
-      "change": "Choose another starter case or replace the code with your own justified model. Retain a separate plan, validation check and evidence record.",
+      "look": "The label above the editor shows which input the next run will use. After a successful run, check the input named under “Your result” and the printed `CASE` and `INPUT OBSERVATIONS`. The simulation count gives the number of model trials. It does not increase the amount of observed input evidence.",
+      "change": "With invented starter data selected, change `case = \"inventory\"` to `case = \"project\"` in the editor and run again. For each `Duration multiplier`, compare the chance of finishing within 20 days and `P90 days`, the simulated duration by which 90% of projects finish.",
       "question": "Your modelled decision reverses across two credible input scenarios. What is an honest report?",
       "options": [
         "Hide the scenario that gives an inconvenient result.",

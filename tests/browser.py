@@ -19,7 +19,7 @@ def visit(page,url):
 def wait_result(page):
     page.wait_for_function("document.querySelector('#status').textContent.startsWith('Completed') || document.querySelector('#status').textContent.includes('error') || document.querySelector('#status').textContent.includes('could not')",timeout=150000)
     status=page.locator('#status').inner_text()
-    assert status.startswith('Completed'),status+'\n'+page.locator('#output').inner_text()
+    assert status.startswith('Completed'),status+'\n'+page.locator('#error-summary').inner_text()
 
 def open_optional(page,identifier):
     details=page.locator('#'+identifier)
@@ -33,6 +33,11 @@ def download(page,selector,path):
     if selector=='#download-code':open_optional(page,'editor-tools')
     with page.expect_download() as info:page.locator(selector).click()
     info.value.save_as(path)
+
+def report_block(report,language):
+    block=re.search(rb'(?m)^(?P<fence>`{3,})'+language+rb'\n(?P<content>.*?)\n(?P=fence)$',report,re.S)
+    assert block,language
+    return block['content']
 
 server=subprocess.Popen([sys.executable,'-m','http.server','5186','--bind','127.0.0.1','--directory',str(ROOT/'.preview')],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 try:
@@ -82,6 +87,12 @@ try:
         restore_example(page)
         assert 'delay = np.array' in page.locator('#code').input_value()
         assert not page.locator('#saved-draft-note').is_visible()
+        page.reload();page.wait_for_selector('html[data-ready=true]')
+        open_optional(page,'editor-tools')
+        page.locator('#recover-draft').click()
+        assert page.locator('#code').input_value()=="print('saved learner work')"
+        assert page.evaluate('document.activeElement.id')=='code'
+        restore_example(page)
         visit(page,BASE)
         # The optional preparation page is executable and portable, but never
         # changes the existing course count or lesson identities.
@@ -164,49 +175,140 @@ try:
         assert edited['source']==source
         assert 'Overflow: above 120' in base64.b64decode(edited['figures_svg_base64'][0]).decode()
         assert len(edited['figures_narrow_svg_base64'])==1
-        print('PASS edited attendance threshold, actual plot boundary and exact-source export',flush=True)
+        previous_plot=page.locator('#plots img').get_attribute('src')
+        page.locator('#code').fill(source+'\nraise ValueError("after the plot")\n')
+        page.locator('#run').click()
+        page.wait_for_selector('#run-error')
+        assert page.locator('#plots img').get_attribute('src')==previous_plot
+        print('PASS edited attendance, exact-source export and plot preservation after a failed run',flush=True)
+
+        # Follow the visible action on each revised lesson with optional help closed.
+        for number,old,new in [(14,'6400','10000'),(38,'initial_state = 0','initial_state = 2'),(50,'0.10','0.02')]:
+            lesson=LESSONS[number-1]
+            visit(page,BASE+'lessons/'+lesson['slug']+'.html')
+            assert page.locator('.prepared-state').inner_text()=='Select Run Python below with the code unchanged.'
+            assert old in page.locator('.change-task').inner_text() and new in page.locator('.change-task').inner_text()
+            assert not page.locator('#editor-tools').evaluate('e=>e.open')
+            source=page.locator('#code').input_value()
+            page.locator('#run').click();wait_result(page)
+            baseline=page.locator('#output').inner_text()
+            page.locator('#code').fill(source.replace(old,new,1))
+            page.locator('#run').click();wait_result(page)
+            changed=page.locator('#output').inner_text()
+            if number==14:
+                assert 'n: 6400' in baseline and 'n: 6400' not in changed
+                errors_by_draws={int(n):float(error) for n,error in re.findall(r'n: (\d+) RMSE across batches: ([\d.]+)',changed)}
+                assert .07<errors_by_draws[10000]/errors_by_draws[100]<.13
+            elif number==38:
+                def proportions(output):
+                    return {int(step):[float(value) for value in row.split()] for step,row in re.findall(r'Step (\d+): \[([^\]]+)\]',output)}
+                original_rows,changed_rows=proportions(baseline),proportions(changed)
+                assert original_rows.keys()==changed_rows.keys()=={1,5,20}
+                assert 'Initial state: 0' in baseline and 'Initial state: 2' in changed
+                differences=[sum(abs(a-b) for a,b in zip(original_rows[step],changed_rows[step])) for step in (1,5,20)]
+                assert differences[0]>differences[1]>differences[2]
+            else:
+                assert 'Best feasible point-estimate choice: 32' in baseline
+                assert 'Best feasible point-estimate choice: 36' in changed
+                page.locator('#code').fill(source.replace(old,'0.005',1))
+                page.locator('#run').click();wait_result(page)
+                assert 'No tested stock level meets the limit based on its estimated shortage probability.' in page.locator('#output').inner_text()
+                assert not page.locator('#run-error').is_visible()
+        print('PASS original and edited convergence, starting state and shortage limit lessons',flush=True)
+
         # CSV input must replace starter data; exports preserve executed inputs.
+        page.set_viewport_size({'width':390,'height':844})
         visit(page,BASE+'lessons/'+CAPSTONE['slug']+'.html')
-        csv='value\n10\n12\n14\n16\n18\n20\n22\n24\n'
-        page.locator('#csv-upload').set_input_files({'name':'observations.csv','mimeType':'text/csv','buffer':csv.encode()})
-        page.wait_for_function("document.querySelector('#csv-status').textContent.includes('Selected observations.csv')")
+        csv='\ufeffvalue\r\n10\r\n12\r\n14\r\n16\r\n18\r\n20\r\n22\r\n24\r\n'
+        filename='observations-'+('quarterlydata'*15)+'.csv'
+        result_provenance=page.locator('#output-provenance')
+        assert 'invented starter data' in page.locator('#input-kind').inner_text()
+        assert 'at least eight observations' in page.locator('.upload-panel').inner_text()
+        assert not page.locator('#clear-csv').is_visible()
+        page.evaluate('''() => {
+            const read=File.prototype.arrayBuffer;
+            File.prototype.arrayBuffer=function(){
+                return new Promise(resolve=>{window.finishReading=()=>{
+                    window.finishReading=null;
+                    resolve(read.call(this));
+                };});
+            };
+        }''')
+        picker=page.locator('#csv-upload')
+        picker.focus()
+        picker.set_input_files({'name':filename,'mimeType':'text/csv','buffer':csv.encode()})
+        page.wait_for_function("typeof window.finishReading==='function'")
+        assert page.locator('#run').is_disabled() and picker.is_disabled()
+        page.evaluate('window.finishReading()')
+        page.wait_for_function("name=>document.querySelector('#input-kind').textContent.includes(name)",arg=filename)
+        assert page.evaluate('document.activeElement.id')=='csv-upload'
+        old_source=page.locator('#code').input_value()+"\n# A Markdown fence: ```\nprint('```')\n"
+        page.locator('#code').fill(old_source)
         page.locator('#run').click();wait_result(page)
-        assert 'uploaded CSV' in page.locator('#output').inner_text()
-        assert 'INPUT OBSERVATIONS: 8' in page.locator('#output').inner_text()
+        original_output=page.locator('#output').inner_text()
+        assert 'uploaded CSV' in original_output and 'INPUT OBSERVATIONS: 8' in original_output
+        assert 'CSV for this result · '+filename in result_provenance.inner_text()
+        assert result_provenance.evaluate('el=>el.scrollWidth<=el.clientWidth')
         page.locator('#report-question').fill('Which stock meets the stated loss and service objective?')
         page.locator('#report-source').fill('Browser test fixture, invented demand observations.')
         download(page,'#export-run',RESULTS/'run.json')
         record=json.loads((RESULTS/'run.json').read_text())
         assert record['input_csv']==csv and record['versions']['scipy']=='1.14.1'
-        old_source=record['source']
+        assert record['source']==old_source and record['error'] is None
         page.locator('#code').fill(old_source+'\n# changed after execution\n')
         assert 'changed' in page.locator('#output-provenance').inner_text()
         download(page,'#export-run',RESULTS/'run-after-edit.json')
-        assert json.loads((RESULTS/'run-after-edit.json').read_text())['source']==old_source
+        assert json.loads((RESULTS/'run-after-edit.json').read_text())==record
         download(page,'#export-report',RESULTS/'investigation.md')
-        report=(RESULTS/'investigation.md').read_text()
-        assert 'changed after this run' in report and csv.strip() in report
+        report=(RESULTS/'investigation.md').read_bytes()
+        assert b'changed after this run' in report and report_block(report,b'csv')==csv.encode()
         print('PASS CSV and exact-source exports',flush=True)
         # Invalid CSV must fail visibly, then recover to starter input.
         restore_example(page)
-        page.locator('#csv-upload').set_input_files({'name':'bad.csv','mimeType':'text/csv','buffer':b'wrong,columns\n1,2\n'})
-        page.wait_for_function("document.querySelector('#csv-status').textContent.includes('Selected bad.csv')")
+        picker.set_input_files({'name':'bad.csv','mimeType':'text/csv','buffer':b'wrong,columns\n1,2\n'})
+        page.wait_for_function("typeof window.finishReading==='function'")
+        page.evaluate('window.finishReading()')
+        page.wait_for_function("document.querySelector('#input-kind').textContent.includes('bad.csv')")
         page.locator('#run').click()
         page.wait_for_function("document.querySelector('#status').textContent.includes('reported an error')",timeout=90000)
-        assert 'CSV needs a value column' in page.locator('#output').inner_text()
+        assert 'Choose CSV' in page.locator('#status').inner_text()
+        assert 'CSV needs a value column' in page.locator('#error-summary').inner_text()
+        assert 'bad.csv' in page.locator('#error-input').inner_text()
+        assert filename in result_provenance.inner_text()
+        assert page.locator('#output').inner_text()==original_output
+        download(page,'#export-run',RESULTS/'run-after-error.json')
+        assert json.loads((RESULTS/'run-after-error.json').read_text())==record
+        download(page,'#export-report',RESULTS/'investigation-after-error.md')
+        report=(RESULTS/'investigation-after-error.md').read_bytes()
+        assert filename.encode() in report and b'bad.csv' not in report
+        assert report_block(report,b'python')==old_source.encode()
+        assert report_block(report,b'csv')==csv.encode()
+        assert report_block(report,b'text')==record['stdout'].encode()
+        picker.set_input_files({'name':'non-utf8.csv','mimeType':'text/csv','buffer':b'value\n\xff\n'})
+        page.wait_for_function("typeof window.finishReading==='function'")
+        page.evaluate('window.finishReading()')
+        page.wait_for_function("document.querySelector('#csv-status').textContent.includes('Save the CSV as UTF-8')")
+        assert 'bad.csv' in page.locator('#input-kind').inner_text()
         page.locator('#clear-csv').click();page.locator('#run').click();wait_result(page)
         assert 'INVENTED starter' in page.locator('#output').inner_text()
+        assert not page.locator('#clear-csv').is_visible()
         # Editor error and Stop must leave a viable next action.
         visit(page,BASE+'lessons/'+LESSONS[0]['slug']+'.html')
         page.locator('#code').fill("print('before failure')\nraise ValueError('deliberate test error')")
-        page.locator('#run').click()
+        page.locator('#code').press('Control+Enter')
         page.wait_for_function("document.querySelector('#status').textContent.includes('reported an error')",timeout=150000)
-        assert 'before failure' in page.locator('#output').inner_text()
-        assert 'deliberate test error' in page.locator('#output').inner_text()
+        assert not page.locator('#run-result').is_visible()
+        assert not page.locator('#export-run').is_visible()
+        assert 'deliberate test error' in page.locator('#error-summary').inner_text()
+        open_optional(page,'error-details')
+        assert 'before failure' in page.locator('#error-trace').inner_text()
         page.locator('#code').fill('while True: pass')
-        page.locator('#run').click();page.wait_for_function("document.querySelector('#status').textContent==='Running your Python…'",timeout=30000)
+        page.locator('#code').press('Tab')
+        assert page.evaluate('document.activeElement.id')=='run'
+        page.keyboard.press('Enter');page.wait_for_function("document.querySelector('#status').textContent==='Running your Python…'",timeout=30000)
         assert page.locator('#stop').is_visible()
-        page.locator('#stop').click();assert 'Stopped' in page.locator('#status').inner_text()
+        assert page.evaluate('document.activeElement.id')=='stop'
+        page.keyboard.press('Enter');assert 'Stopped' in page.locator('#status').inner_text()
         assert page.evaluate('document.activeElement.id')=='run'
         restore_example(page)
         assert page.locator('#code-highlight code').text_content()==page.locator('#code').input_value()+'\n'
@@ -232,6 +334,7 @@ try:
         assert page.locator('#mark-read').is_checked()
         page.locator('#code').evaluate('el=>{el.scrollTop=70;el.scrollLeft=30;el.dispatchEvent(new Event("scroll"))}')
         assert page.locator('#code').evaluate('el=>el.scrollLeft')==page.locator('#code-highlight').evaluate('el=>el.scrollLeft')
+        page.set_viewport_size({'width':1440,'height':1000})
         print('PASS feedback and saved drafts',flush=True)
         # Theme persists, mobile has no page-wide overflow, all reading routes work.
         page.locator('#theme').click();assert page.locator('html').get_attribute('data-theme')=='dark'
@@ -296,6 +399,10 @@ try:
         assert second.locator('#mark-read').is_checked()
         visit(second,BASE+'lessons/'+LESSONS[0]['slug']+'.html')
         assert second.locator('#notes').input_value()=='A note to preserve'
+        visit(second,BASE+'lessons/see-the-outcomes-before-the-headline.html')
+        open_optional(second,'editor-tools')
+        second.locator('#recover-draft').click()
+        assert second.locator('#code').input_value()=="print('saved learner work')"
         print('PASS 200% text, menu and portable progress',flush=True)
         # Static reading does not need JS or any runtime assets.
         reading=browser.new_context(java_script_enabled=False,reduced_motion='reduce')
