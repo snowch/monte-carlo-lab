@@ -140,7 +140,7 @@
 .lab-workspace .run-error[hidden],.editor-tools [hidden],.upload-panel #csv-status:empty,.upload-panel #clear-csv[hidden]{display:none}
 .run-error{padding:16px 24px;background:var(--surface-soft);border-bottom:1px solid var(--line)}
 .run-error h3,.run-error summary{font-size:1rem}
-.run-error p,#input-kind,#csv-status{overflow-wrap:anywhere}
+.run-error p,#input-kind,#csv-status,#output-provenance{overflow-wrap:anywhere}
 .run-error p{margin:4px 0 10px}
 .run-error pre{margin:0;max-height:300px;overflow:auto}
 @media(max-width:700px){.run-error{padding:16px}}

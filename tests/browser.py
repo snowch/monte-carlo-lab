@@ -220,6 +220,8 @@ try:
         page.set_viewport_size({'width':390,'height':844})
         visit(page,BASE+'lessons/'+CAPSTONE['slug']+'.html')
         csv='\ufeffvalue\r\n10\r\n12\r\n14\r\n16\r\n18\r\n20\r\n22\r\n24\r\n'
+        filename='observations-'+('quarterlydata'*15)+'.csv'
+        result_provenance=page.locator('#output-provenance')
         assert 'invented starter data' in page.locator('#input-kind').inner_text()
         assert 'at least eight observations' in page.locator('.upload-panel').inner_text()
         assert not page.locator('#clear-csv').is_visible()
@@ -234,18 +236,19 @@ try:
         }''')
         picker=page.locator('#csv-upload')
         picker.focus()
-        picker.set_input_files({'name':'observations.csv','mimeType':'text/csv','buffer':csv.encode()})
+        picker.set_input_files({'name':filename,'mimeType':'text/csv','buffer':csv.encode()})
         page.wait_for_function("typeof window.finishReading==='function'")
         assert page.locator('#run').is_disabled() and picker.is_disabled()
         page.evaluate('window.finishReading()')
-        page.wait_for_function("document.querySelector('#input-kind').textContent.includes('observations.csv')")
+        page.wait_for_function("name=>document.querySelector('#input-kind').textContent.includes(name)",arg=filename)
         assert page.evaluate('document.activeElement.id')=='csv-upload'
         old_source=page.locator('#code').input_value()+"\n# A Markdown fence: ```\nprint('```')\n"
         page.locator('#code').fill(old_source)
         page.locator('#run').click();wait_result(page)
         original_output=page.locator('#output').inner_text()
         assert 'uploaded CSV' in original_output and 'INPUT OBSERVATIONS: 8' in original_output
-        assert 'CSV for this result · observations.csv' in page.locator('#output-provenance').inner_text()
+        assert 'CSV for this result · '+filename in result_provenance.inner_text()
+        assert result_provenance.evaluate('el=>el.scrollWidth<=el.clientWidth')
         page.locator('#report-question').fill('Which stock meets the stated loss and service objective?')
         page.locator('#report-source').fill('Browser test fixture, invented demand observations.')
         download(page,'#export-run',RESULTS/'run.json')
@@ -271,13 +274,13 @@ try:
         assert 'Choose CSV' in page.locator('#status').inner_text()
         assert 'CSV needs a value column' in page.locator('#error-summary').inner_text()
         assert 'bad.csv' in page.locator('#error-input').inner_text()
-        assert 'observations.csv' in page.locator('#output-provenance').inner_text()
+        assert filename in result_provenance.inner_text()
         assert page.locator('#output').inner_text()==original_output
         download(page,'#export-run',RESULTS/'run-after-error.json')
         assert json.loads((RESULTS/'run-after-error.json').read_text())==record
         download(page,'#export-report',RESULTS/'investigation-after-error.md')
         report=(RESULTS/'investigation-after-error.md').read_bytes()
-        assert b'observations.csv' in report and b'bad.csv' not in report
+        assert filename.encode() in report and b'bad.csv' not in report
         assert report_block(report,b'python')==old_source.encode()
         assert report_block(report,b'csv')==csv.encode()
         assert report_block(report,b'text')==record['stdout'].encode()

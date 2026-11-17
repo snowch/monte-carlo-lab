@@ -285,7 +285,8 @@ Chromium walkthroughs exercised the original lessons, each stated edit and the
 capstone’s CSV and error path at 390px in dark mode and at 1280px in light mode.
 Checked reflow at both widths in both themes with optional panels closed.
 Browser regressions cover keyboard focus for Run, Stop and pending file reads,
-as well as draft recovery after reload and import. Following a rejected CSV,
+long filenames wrapping in the result, and draft recovery after reload and
+import. Following a rejected CSV,
 the tests recovered the exact successful input, source and output from JSON
 and Markdown. The input fixture includes a UTF-8 byte-order mark, CRLF line
 endings and a trailing newline. The source includes Markdown fence characters.
