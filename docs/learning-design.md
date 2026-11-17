@@ -116,3 +116,22 @@ Use the existing lesson-row typography, search and reading marker; label it
 optional and retain the main 76-lesson denominator. Keep the direct lesson-1
 start action and existing sidebar entry. Check title search, row order, narrow
 layout and reading status without creating a second module or a new card.
+
+## Experiment edits and evidence recovery
+
+Preserve the course's introductory Python prerequisites and its transfer
+questions. In lesson 14, define root mean square error through the repeated
+batch calculation and compare the printed errors for 100 and 10,000 draws.
+The running trace shows one sequence, while the table compares typical errors
+across sequences. In lesson 38, change only the starting weather state and
+compare cloudy, clear and wet proportions across three times. A small
+late difference in this model does not prove a general convergence result.
+In lesson 50, change only the modelled shortage limit and interpret an empty
+set of feasible tested options as a valid decision result.
+
+In the capstone, choose a case and suitable observations before execution,
+then use the latest successful run to support the report. Keep the structural
+CSV requirements next to the picker and distinguish the file selected for a
+new attempt from the recorded input. Preserve saved drafts and provide recovery
+from restoring published code. The essential actions and evidence remain
+available with optional notes and tools closed.
