@@ -223,6 +223,8 @@ try:
         filename='observations-'+('quarterlydata'*15)+'.csv'
         result_provenance=page.locator('#output-provenance')
         assert 'invented starter data' in page.locator('#input-kind').inner_text()
+        assert not page.locator('#csv-upload').is_visible()
+        open_optional(page,'observations')
         assert 'at least eight observations' in page.locator('.upload-panel').inner_text()
         assert not page.locator('#clear-csv').is_visible()
         page.evaluate('''() => {
@@ -271,7 +273,7 @@ try:
         page.wait_for_function("document.querySelector('#input-kind').textContent.includes('bad.csv')")
         page.locator('#run').click()
         page.wait_for_function("document.querySelector('#status').textContent.includes('reported an error')",timeout=90000)
-        assert 'Choose CSV' in page.locator('#status').inner_text()
+        assert 'Use your own CSV' in page.locator('#status').inner_text()
         assert 'CSV needs a value column' in page.locator('#error-summary').inner_text()
         assert 'bad.csv' in page.locator('#error-input').inner_text()
         assert filename in result_provenance.inner_text()

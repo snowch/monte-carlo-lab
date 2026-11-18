@@ -294,3 +294,10 @@ The full check passed 15 native tests, all 80 real-Wasm examples, and 7,893
 relative links and fragments across 82 pages.
 
 These are functional and author checks. No learner study measured understanding.
+
+## 2026-11-18 — full wording and interface audit
+
+The [full review](copy-audit.md) records the opening and closing criteria and
+route findings for the course overview, field notes and 80 investigations. It
+includes exact first-run and editor-change instructions, named comparison
+evidence, the optional CSV route, and reliable saved-work and recovery feedback.
