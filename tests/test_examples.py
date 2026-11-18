@@ -177,4 +177,24 @@ class CourseTests(unittest.TestCase):
             'value\n1\n2\n3\n4\n5\n6\n7\nhello\n']
         for text in invalid:
             with self.subTest(text=text),self.assertRaises((AssertionError,ValueError)):self.capstone(text)
+    def test_documented_editor_changes_are_executable(self):
+        exercises=json.loads((ROOT/'tests/lesson-edits.json').read_text())
+        self.assertEqual(set(exercises),{lesson['slug'] for lesson in ALL})
+        for lesson in ALL:
+            slug=lesson['slug']
+            exercise=exercises[slug]
+            original=(ROOT/'python'/lesson['code']).read_text()
+            for index,replacements in enumerate([exercise['replace'],*exercise.get('variants',[])]):
+                with self.subTest(lesson=slug,variant=index):
+                    source=original
+                    for old,new in replacements:
+                        self.assertEqual(source.count(old),1,old)
+                        source=source.replace(old,new,1)
+                    if exercise.get('error'):
+                        with self.assertRaises(AssertionError):run(lesson,source)
+                    else:
+                        _,output=run(lesson,source)
+                        self.assertNotEqual(output,self.runs[slug][1])
+                        if not index and exercise.get('contains'):
+                            self.assertIn(exercise['contains'],output)
 if __name__=='__main__':unittest.main()

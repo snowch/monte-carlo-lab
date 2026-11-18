@@ -144,3 +144,12 @@
 .run-error p{margin:4px 0 10px}
 .run-error pre{margin:0;max-height:300px;overflow:auto}
 @media(max-width:700px){.run-error{padding:16px}}
+
+#code-editor{scroll-margin-top:calc(4.5rem + 20px)}
+#back-to-editor{display:inline-block;margin-top:.35rem}
+.save-note:empty{margin:0}
+.read-mark #read-status:not(:empty){display:block;margin:0}
+.change-task p code{overflow-wrap:anywhere}
+.upload-panel>summary{min-height:44px;line-height:1.6;padding:8px 0}
+.upload-panel>summary span{font-size:.875em;color:var(--muted)}
+.upload-panel:not([open]){background:transparent;border:0;padding:0;margin:0 0 12px}

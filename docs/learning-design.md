@@ -135,3 +135,19 @@ CSV requirements next to the picker and distinguish the file selected for a
 new attempt from the recorded input. Preserve saved drafts and provide recovery
 from restoring published code. The essential actions and evidence remain
 available with optional notes and tools closed.
+
+## Full wording and interface pass
+
+The core assumes basic Python. Lesson 0 remains an optional probability bridge.
+The advanced route assumes the core, logarithms and elementary probability
+densities. A learner should be able to run the published source, locate the
+stated evidence, make the documented edit and explain what the comparison
+shows. Each lesson retains its own fresh case and feedback.
+
+The opening sweep at `74bc62e` covers the overview, field notes and all 80
+investigations. Read the prose against the editor, runtime messages, numerical
+output, references and optional panels. Watch for a change that omits one of
+the matching formulas, an output label that describes only the original
+setting, scenario arithmetic presented as measured evidence, and save
+feedback that remains visible after a failed write. Keep the first run and
+the edit paths accessible with optional panels closed.

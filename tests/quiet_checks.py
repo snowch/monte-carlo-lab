@@ -18,6 +18,11 @@ def check_quiet_layout(browser,root,base,lessons):
             assert not page.locator('#notes').is_visible()
             assert not page.locator('#restore').is_visible()
             assert page.locator('.data-kind').inner_text().strip()
+            assert page.locator('.prepared-state').is_visible()
+            assert page.locator('.prepared-state').inner_text().startswith('Select Run Python')
+            assert page.locator('button.primary:visible').count()==1
+            page.locator('#back-to-editor').press('Enter')
+            assert page.evaluate('document.activeElement.id')=='code'
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(width,lesson['slug'])
             assert page.locator('.explanation p').first.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')>=20
             if width==820 and i==0:
@@ -57,7 +62,66 @@ def check_quiet_layout(browser,root,base,lessons):
     reader=blocked.new_page();reader.goto(base+'lessons/'+lessons[0]['slug']+'.html')
     reader.wait_for_selector('html[data-ready=true]')
     assert reader.locator('#storage-error').is_visible()
-    assert 'storage is unavailable' in reader.locator('#storage-error').inner_text()
+    assert 'could not open your saved work' in reader.locator('#storage-error').inner_text()
     assert reader.locator('#run').is_enabled()
+    reader.goto(base);reader.wait_for_selector('html[data-ready=true]')
+    reader.locator('.portable-progress summary').click()
+    reader.locator('#export-progress').click()
+    assert 'No file was downloaded' in reader.locator('#progress-status').inner_text()
     blocked.close()
+    writing=browser.new_context(viewport={'width':390,'height':844})
+    editor=writing.new_page()
+    editor.goto(base+'lessons/'+lessons[0]['slug']+'.html')
+    editor.wait_for_selector('html[data-ready=true]')
+    editor.locator('#lesson-notes summary').press('Enter')
+    assert editor.locator('#save-note').text_content()==''
+    editor.locator('#notes').fill('Earlier saved note')
+    assert 'Notes saved' in editor.locator('#save-note').inner_text()
+    editor.evaluate("""() => {
+        const original = Storage.prototype.setItem;
+        Storage.prototype.setItem = function(key, value) {
+            if (key.startsWith('mcl:v1:') && window.rejectDraftWrites) {
+                throw new DOMException('Full', 'QuotaExceededError');
+            }
+            return original.call(this, key, value);
+        };
+        window.rejectDraftWrites = true;
+    }""")
+    editor.locator('#notes').fill('Current unsaved note')
+    assert 'could not save these edits' in editor.locator('#save-note').inner_text()
+    assert editor.locator('#notes').input_value()=='Current unsaved note'
+    editor.locator('#code').fill('print(123)')
+    assert 'could not save the open code' in editor.locator('#storage-error').inner_text()
+    editor.evaluate('window.rejectDraftWrites = false')
+    editor.locator('#code').fill('print(456)')
+    assert not editor.locator('#storage-error').is_visible()
+    editor.reload()
+    editor.wait_for_selector('html[data-ready=true]')
+    assert editor.locator('#notes').input_value()=='Earlier saved note'
+    assert editor.locator('#code').input_value()=='print(456)'
+    capstone=next(lesson for lesson in lessons if lesson['capstone'])
+    editor.goto(base+'lessons/'+capstone['slug']+'.html')
+    editor.wait_for_selector('html[data-ready=true]')
+    editor.locator('#report-question').fill('Earlier saved question')
+    editor.evaluate("""() => {
+        const original = Storage.prototype.setItem;
+        Storage.prototype.setItem = function(key, value) {
+            if (key.endsWith(':report-question')) {
+                throw new DOMException('Full', 'QuotaExceededError');
+            }
+            return original.call(this, key, value);
+        };
+    }""")
+    editor.locator('#report-question').fill('Current open question')
+    editor.locator('#report-source').fill('Saved source entry')
+    assert 'could not save some report edits' in editor.locator('#report-draft-status').inner_text()
+    with editor.expect_download() as export:
+        editor.locator('#export-report').press('Enter')
+    assert 'Current open question' in export.value.path().read_text()
+    assert 'could not save some report edits' in editor.locator('#report-draft-status').inner_text()
+    editor.reload()
+    editor.wait_for_selector('html[data-ready=true]')
+    assert editor.locator('#report-question').input_value()=='Earlier saved question'
+    assert editor.locator('#report-source').input_value()=='Saved source entry'
+    writing.close()
     print('PASS quiet default states, 820/1024px tablet/sidebar layouts, optional tools, module search and deep links.',flush=True)

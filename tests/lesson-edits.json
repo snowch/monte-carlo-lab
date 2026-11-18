@@ -1,0 +1,872 @@
+{
+  "probability-essentials": {
+    "replace": [
+      [
+        "seats = 2",
+        "seats = 1"
+      ]
+    ],
+    "contains": "Illustrative fraction: 0.75"
+  },
+  "will-the-room-be-full": {
+    "replace": [
+      [
+        "150, 0.72, 110",
+        "150, 0.72, 120"
+      ]
+    ]
+  },
+  "what-counts-as-one-trial": {
+    "replace": [
+      [
+        "rng.random((6, 8))",
+        "rng.random((10000, 8))"
+      ]
+    ]
+  },
+  "repeat-the-whole-experiment": {
+    "replace": [
+      [
+        "ticket_price, fixed_cost = 25, 900",
+        "ticket_price, fixed_cost = 25, 1000"
+      ]
+    ]
+  },
+  "see-the-outcomes-before-the-headline": {
+    "replace": [
+      [
+        "5, 15])",
+        "5, 30])"
+      ]
+    ]
+  },
+  "reproduce-a-random-run": {
+    "replace": [
+      [
+        "b = replay.integers(0, 100, 8)",
+        "replay.integers(0, 100)\nb = replay.integers(0, 100, 8)"
+      ]
+    ],
+    "contains": "Replay identical: False"
+  },
+  "check-against-an-exact-answer": {
+    "replace": [
+      [
+        "(attendance > seats).mean()",
+        "(attendance >= seats).mean()"
+      ],
+      [
+        "stats.binom.sf(seats, invited, probability)",
+        "stats.binom.sf(seats - 1, invited, probability)"
+      ]
+    ]
+  },
+  "sample-weighted-alternatives": {
+    "replace": [
+      [
+        "[.5, .3, .2]",
+        "[.4, .3, .3]"
+      ]
+    ]
+  },
+  "count-successes-in-a-fixed-group": {
+    "replace": [
+      [
+        "n, p = 30, .95",
+        "n, p = 30, .5"
+      ]
+    ]
+  },
+  "count-arrivals-in-an-interval": {
+    "replace": [
+      [
+        "rate_per_hour, hours = 4, .5",
+        "rate_per_hour, hours = 4, 2"
+      ]
+    ]
+  },
+  "wait-for-the-next-event": {
+    "replace": [
+      [
+        "rate_per_hour = 3",
+        "rate_per_hour = 6"
+      ]
+    ]
+  },
+  "model-symmetric-variation": {
+    "replace": [
+      [
+        "error_sd = 2",
+        "error_sd = 4"
+      ]
+    ]
+  },
+  "keep-positive-quantities-positive": {
+    "replace": [
+      [
+        "log_mean, log_sd = np.log(10), .7",
+        "log_mean, log_sd = np.log(10), 1.2"
+      ]
+    ]
+  },
+  "two-different-kinds-of-spread": {
+    "replace": [
+      [
+        "rng.normal(100, 20, size=(100, n))",
+        "rng.normal(100, 40, size=(100, n))"
+      ]
+    ]
+  },
+  "watch-convergence-without-promising-a-winner": {
+    "replace": [
+      [
+        "6400",
+        "10000"
+      ]
+    ],
+    "contains": "n: 10000"
+  },
+  "calculate-monte-carlo-standard-error": {
+    "replace": [
+      [
+        "n = 2000",
+        "n = 8000"
+      ]
+    ]
+  },
+  "an-interval-for-a-simulated-mean": {
+    "replace": [
+      [
+        "size=10000",
+        "size=20"
+      ],
+      [
+        "default_rng(2015)",
+        "default_rng(16)"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "size=10000",
+          "size=20"
+        ]
+      ]
+    ]
+  },
+  "when-zero-failures-is-not-zero-risk": {
+    "replace": [
+      [
+        "n, failures = 1000, 0",
+        "n, failures = 10000, 0"
+      ]
+    ]
+  },
+  "plan-a-precision-budget": {
+    "replace": [
+      [
+        "[.05, .02, .01]",
+        "[.05, .02, .01, .005]"
+      ]
+    ],
+    "contains": "half-width: 0.005"
+  },
+  "an-input-needs-a-source": {
+    "replace": [
+      [
+        "    {\"name\":\"service_mean\", \"value\":7, \"unit\":\"minutes\", \"source\":\"invented pilot estimate\"}])",
+        "    {\"name\":\"service_mean\", \"value\":7, \"unit\":\"minutes\", \"source\":\"invented pilot estimate\"},\n    {\"name\":\"service_sd\", \"value\":2, \"unit\":\"minutes\", \"source\":\"assumption\"}])"
+      ]
+    ],
+    "contains": "service_sd"
+  },
+  "sample-the-observations-you-have": {
+    "replace": [
+      [
+        "74, 58])",
+        "74, 58, 150])"
+      ]
+    ]
+  },
+  "fit-a-shape-and-inspect-the-fit": {
+    "replace": [
+      [
+        "5.3, 7.2])",
+        "5.3])"
+      ]
+    ]
+  },
+  "turn-an-expert-estimate-into-a-model": {
+    "replace": [
+      [
+        "low, mode, high = 2, 4, 12",
+        "low, mode, high = 2, 4, 20"
+      ]
+    ]
+  },
+  "the-parameters-are-estimates-too": {
+    "replace": [
+      [
+        "observed = np.array([42, 55, 61, 47, 83, 59, 66, 52, 74, 58])",
+        "observed = np.array([42, 55, 61, 47, 83, 59, 66, 52, 74, 58])\nobserved = np.repeat(observed, 10)"
+      ]
+    ]
+  },
+  "a-scenario-is-not-a-probability": {
+    "replace": [
+      [
+        "\"disrupted\": 100}",
+        "\"disrupted\": 100, \"extreme\": 130}"
+      ]
+    ],
+    "contains": "extreme"
+  },
+  "independence-changes-the-answer": {
+    "replace": [
+      [
+        "    print(name, \"mean:\", round(total.mean(), 3), \"P(total > 70):\", round((total > 70).mean(), 4))",
+        "    print(name, \"mean:\", round(total.mean(), 3), \"P(total > 70):\", round((total > 70).mean(), 4))\n    print(\"P(total < 50):\", round((total < 50).mean(), 4))"
+      ]
+    ]
+  },
+  "make-the-shared-cause-visible": {
+    "replace": [
+      [
+        "spend_per_customer = 12 * busy_factor + rng.normal(0, .5, len(busy_factor))",
+        "spend_per_customer = 12 * rng.lognormal(0, .25, len(busy_factor)) + rng.normal(0, .5, len(busy_factor))"
+      ]
+    ]
+  },
+  "correlation-does-not-tell-the-whole-story": {
+    "replace": [
+      [
+        "y = np.abs(x)",
+        "y = x + rng.normal(0, .1, len(x))"
+      ],
+      [
+        "plt.ylabel(\"Y = |X|\")",
+        "plt.ylabel(\"Y\")"
+      ]
+    ]
+  },
+  "generate-correlated-normal-inputs": {
+    "replace": [
+      [
+        "rho = .7",
+        "rho = -.7"
+      ]
+    ]
+  },
+  "sample-one-condition-after-another": {
+    "replace": [
+      [
+        "attendance = rng.binomial(100, attendance_probability)",
+        "attendance = rng.binomial(100, .71, size=len(rainy))"
+      ]
+    ]
+  },
+  "stress-test-the-dependency-assumption": {
+    "replace": [
+      [
+        "for rho in [-.5, 0, .5, .9]:",
+        "for rho in [-.5, 0, .25, .5, .9]:"
+      ]
+    ],
+    "contains": "0.2500"
+  },
+  "will-the-project-finish-on-time": {
+    "replace": [
+      [
+        "rng.triangular(3, 5, 10, 20000)",
+        "rng.triangular(3, 5, 16, 20000)"
+      ]
+    ]
+  },
+  "how-much-contingency-is-enough": {
+    "replace": [
+      [
+        "print(\"Estimated P(over baseline):\", round((total_cost > baseline).mean(), 4))",
+        "print(\"Estimated P(over baseline):\", round((total_cost > baseline).mean(), 4))\nfor coverage in [.8, .9, .95]:\n    print(\"Coverage:\", coverage, \"Reserve (£):\", round(max(0, np.quantile(total_cost, coverage)-baseline), 2))"
+      ]
+    ],
+    "contains": "Coverage: 0.95"
+  },
+  "enough-food-without-too-much-waste": {
+    "replace": [
+      [
+        "loss = 12*shortage + 3*waste",
+        "loss = 30*shortage + 3*waste"
+      ]
+    ]
+  },
+  "how-uncertain-is-a-calculated-measurement": {
+    "replace": [
+      [
+        "area = width * height",
+        "offset = rng.normal(0, .1, len(width))\narea = (width + offset) * (height + offset)"
+      ]
+    ]
+  },
+  "how-reliable-is-a-whole-product": {
+    "replace": [
+      [
+        "print(\"Simulated trials:\", len(working))",
+        "print(\"Simulated trials:\", len(working))\nprint(\"Parallel with shared failures:\", round((parallel & (rng.random(len(working)) >= .01)).mean(), 5))"
+      ]
+    ]
+  },
+  "estimate-an-integral-by-sampling": {
+    "replace": [
+      [
+        "a, b = 0, 2",
+        "a, b = 1, 3"
+      ]
+    ]
+  },
+  "follow-a-random-walk": {
+    "replace": [
+      [
+        "rng.choice([-1, 1], size=(3000, 100))",
+        "rng.choice([-1, 1], size=(3000, 100), p=[.45, .55])"
+      ]
+    ]
+  },
+  "move-between-states": {
+    "replace": [
+      [
+        "initial_state = 0",
+        "initial_state = 2"
+      ]
+    ],
+    "contains": "Initial state: 2"
+  },
+  "parallel-work-changes-the-critical-path": {
+    "replace": [
+      [
+        "print(\"Fraction where B is the longer preparation:\", round((b > a).mean(), 4))",
+        "print(\"Fraction where B is the longer preparation:\", round((b > a).mean(), 4))\nprint(\"Half serial median (days):\", round(np.median(np.where(rng.random(len(a)) < .5, serial, parallel)), 3))"
+      ]
+    ]
+  },
+  "keep-an-inventory-ledger": {
+    "replace": [
+      [
+        "trials, days, lead = 2000, 30, 2",
+        "trials, days, lead = 2000, 30, 4"
+      ]
+    ]
+  },
+  "a-queue-remembers-earlier-arrivals": {
+    "replace": [
+      [
+        "arrival_rate, service_mean = .8, 1.0",
+        "arrival_rate, service_mean = 1.1, 1.0"
+      ],
+      [
+        "trials, customers = 1000, 100",
+        "trials, customers = 1000, 300"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "arrival_rate, service_mean = .8, 1.0",
+          "arrival_rate, service_mean = 1.1, 1.0"
+        ]
+      ]
+    ]
+  },
+  "failure-and-repair-use-up-time": {
+    "replace": [
+      [
+        "horizon = 100",
+        "horizon = 1000"
+      ]
+    ]
+  },
+  "vectorise-without-changing-the-question": {
+    "replace": [
+      [
+        "row[0] + max(row[1], row[2])",
+        "row[0] + max(row[1], row[2]) + row[0]*row[0]"
+      ],
+      [
+        "inputs[:, 0] + np.maximum(inputs[:, 1], inputs[:, 2])",
+        "inputs[:, 0] + np.maximum(inputs[:, 1], inputs[:, 2]) + inputs[:, 0]*inputs[:, 0]"
+      ],
+      [
+        "chunk[:, 0]+np.maximum(chunk[:, 1], chunk[:, 2])",
+        "chunk[:, 0]+np.maximum(chunk[:, 1], chunk[:, 2])+chunk[:, 0]*chunk[:, 0]"
+      ]
+    ]
+  },
+  "compare-options-in-the-same-possible-world": {
+    "replace": [
+      [
+        "u**3 - u**2",
+        "(1-u) - u**2"
+      ],
+      [
+        "v**3 - u**2",
+        "(1-v) - u**2"
+      ],
+      [
+        "print(\"Exact difference:\", -1/12)",
+        "print(\"Exact difference:\", 1/6)"
+      ]
+    ]
+  },
+  "give-every-part-of-the-domain-a-turn": {
+    "replace": [
+      [
+        "rng.random((repetitions, n))**2",
+        "rng.random((repetitions, n)) > .973"
+      ],
+      [
+        "stratified_u**2",
+        "stratified_u > .973"
+      ],
+      [
+        "print(\"Exact expectation:\", 1/3)",
+        "print(\"Exact expectation:\", 1-.973)"
+      ]
+    ]
+  },
+  "pair-opposite-draws": {
+    "replace": [
+      [
+        "np.exp(u) + np.exp(1-u)",
+        "(u-.5)**2 + ((1-u)-.5)**2"
+      ],
+      [
+        "ordinary = np.exp(rng.random((repetitions, 2*pairs))).mean(axis=1)",
+        "ordinary = ((rng.random((repetitions, 2*pairs))-.5)**2).mean(axis=1)"
+      ],
+      [
+        "print(\"Exact expectation of exp(U):\", round(np.e-1, 6))",
+        "print(\"Exact expectation of (U-.5)**2:\", round(1/12, 6))"
+      ]
+    ]
+  },
+  "subtract-a-fluctuation-you-can-explain": {
+    "replace": [
+      [
+        "controlled = plain - beta*(u-.5)",
+        "controlled = plain - beta*(u-.55)"
+      ]
+    ]
+  },
+  "spread-points-with-randomised-sobol-sampling": {
+    "replace": [
+      [
+        "np.exp(points.sum(axis=1)).mean()",
+        "(points.min(axis=1) > .95).mean()"
+      ],
+      [
+        "np.exp(rng.random((1024, 2)).sum(axis=1)).mean()",
+        "(rng.random((1024, 2)).min(axis=1) > .95).mean()"
+      ],
+      [
+        "round((np.e-1)**2, 6)",
+        "round(.05**2, 6)"
+      ]
+    ]
+  },
+  "define-what-a-bad-outcome-costs": {
+    "replace": [
+      [
+        "loss = 10*shortage + 2*leftover",
+        "loss = 3*shortage + 2*leftover"
+      ]
+    ]
+  },
+  "compare-feasible-options": {
+    "replace": [
+      [
+        "max_shortage_probability = 0.10",
+        "max_shortage_probability = 0.02"
+      ]
+    ],
+    "contains": "Best feasible point-estimate choice: 36",
+    "variants": [
+      [
+        [
+          "max_shortage_probability = 0.10",
+          "max_shortage_probability = 0.005"
+        ]
+      ]
+    ]
+  },
+  "inspect-the-downside-as-well-as-the-mean": {
+    "replace": [
+      [
+        "rng.lognormal(3, 1, 30000)",
+        "rng.lognormal(3, 1.4, 30000)"
+      ]
+    ]
+  },
+  "find-where-the-decision-changes": {
+    "replace": [
+      [
+        "losses = 10*np.maximum",
+        "losses = 20*np.maximum"
+      ]
+    ]
+  },
+  "what-would-better-information-be-worth": {
+    "replace": [
+      [
+        "[15, 20, 25, 30, 35, 40]",
+        "[20, 25, 30]"
+      ]
+    ]
+  },
+  "a-policy-can-respond-to-new-information": {
+    "replace": [
+      [
+        "signal = latent + rng.normal(0, 1, len(latent))",
+        "signal = latent + rng.normal(0, 2, len(latent))"
+      ]
+    ]
+  },
+  "test-a-small-case-you-can-solve": {
+    "replace": [
+      [
+        "cases = [(0, 5, 10), (5, 5, 0), (8, 5, 30)]",
+        "cases = [(0, 5, 10), (5, 5, 0), (8, 5, 30), (2, 0, 20), (5.25, 5, 2.5)]"
+      ]
+    ]
+  },
+  "compare-predictions-with-observations": {
+    "replace": [
+      [
+        "assumed_mean = 20",
+        "assumed_mean = 26"
+      ]
+    ]
+  },
+  "push-the-boundaries-deliberately": {
+    "replace": [
+      [
+        "served = np.minimum(demand, stock)",
+        "served = demand"
+      ]
+    ],
+    "error": true
+  },
+  "give-parallel-runs-independent-streams": {
+    "replace": [
+      [
+        "print(\"Spawn keys:\", [child.spawn_key for child in children])",
+        "print(\"Spawn keys:\", [child.spawn_key for child in children])\nprint(\"Same-seed batches:\", [np.random.default_rng(2026).integers(0, 1000000, 4).tolist() for _ in range(4)])"
+      ]
+    ]
+  },
+  "write-a-claim-the-evidence-supports": {
+    "replace": [
+      [
+        "mean_demand = 25",
+        "mean_demand = 30"
+      ]
+    ]
+  },
+  "publish-your-own-investigation": {
+    "replace": [
+      [
+        "case = \"inventory\"",
+        "case = \"project\""
+      ]
+    ],
+    "contains": "CASE: project"
+  },
+  "invert-a-cumulative-distribution": {
+    "replace": [
+      [
+        "print(\"Sample median / model median:\", round(np.median(transformed), 4), round(scale*np.log(2), 4))",
+        "print(\"Sample median / model median:\", round(np.median(transformed), 4), round(scale*np.log(2), 4))\nprint(\"Cuts at u=0, .5, .99:\", stats.expon.ppf([0, .5, .99], scale=scale).round(4))"
+      ]
+    ]
+  },
+  "accept-or-reject-a-proposal": {
+    "replace": [
+      [
+        "accept = rng.random(len(proposal)) < proposal",
+        "accept = rng.random(len(proposal)) < proposal**2"
+      ],
+      [
+        "round(accept.mean(), 4), .5",
+        "round(accept.mean(), 4), 1/3"
+      ],
+      [
+        "round(accepted.mean(), 4), 2/3",
+        "round(accepted.mean(), 4), 3/4"
+      ]
+    ]
+  },
+  "weight-samples-from-another-distribution": {
+    "replace": [
+      [
+        "proposal_mean = .5",
+        "proposal_mean = 1"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "proposal_mean = .5",
+          "proposal_mean = 0"
+        ]
+      ]
+    ]
+  },
+  "a-proposal-must-reach-the-answer": {
+    "replace": [
+      [
+        "component = rng.random(30000) < .8",
+        "component = rng.random(30000) < .98"
+      ],
+      [
+        "mixture_density = .2 + 1.6*(x <= .5)",
+        "mixture_density = .02 + 1.96*(x <= .5)"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "component = rng.random(30000) < .8",
+          "component = rng.random(30000) < .98"
+        ],
+        [
+          "mixture_density = .2 + 1.6*(x <= .5)",
+          "mixture_density = .02 + 1.96*(x <= .5)"
+        ],
+        [
+          "default_rng(2063)",
+          "default_rng(64)"
+        ]
+      ]
+    ]
+  },
+  "keep-weights-stable-on-a-log-scale": {
+    "replace": [
+      [
+        "[-1001.0, -1000.0, -999.0]",
+        "[-1000.0, -1000.0, -1000.0]"
+      ]
+    ]
+  },
+  "see-a-rare-event-more-often": {
+    "replace": [
+      [
+        "n, threshold, shift = 30000, 5, 5",
+        "n, threshold, shift = 30000, 5, 7"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "n, threshold, shift = 30000, 5, 5",
+          "n, threshold, shift = 30000, 5, 3"
+        ]
+      ]
+    ]
+  },
+  "when-one-weight-dominates": {
+    "replace": [
+      [
+        "for shift in [0, 2, 4]:",
+        "for shift in [0, 2, 4, 6]:"
+      ]
+    ],
+    "contains": "proposal shift: 6",
+    "variants": [
+      [
+        [
+          "for shift in [0, 2, 4]:",
+          "for shift in [0, 2, 4, 6]:"
+        ],
+        [
+          "default_rng(2066)",
+          "default_rng(67)"
+        ]
+      ]
+    ]
+  },
+  "an-unknown-normalising-constant": {
+    "replace": [
+      [
+        "x = rng.normal(size=20000)",
+        "x = rng.normal(size=1000)"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "x = rng.normal(size=20000)",
+          "x = rng.normal(size=100)"
+        ]
+      ],
+      [
+        [
+          "x = rng.normal(size=20000)",
+          "x = rng.normal(size=1000)"
+        ],
+        [
+          "default_rng(2067)",
+          "default_rng(68)"
+        ]
+      ]
+    ]
+  },
+  "update-a-probability-with-evidence": {
+    "replace": [
+      [
+        "a, b = 2, 2",
+        "a, b = 20, 20"
+      ]
+    ]
+  },
+  "sample-a-posterior-directly": {
+    "replace": [
+      [
+        "event = p > .6",
+        "event = p > .7"
+      ],
+      [
+        "Posterior P(p > .6), Monte Carlo:",
+        "Posterior P(p > .7), Monte Carlo:"
+      ],
+      [
+        "stats.beta.sf(.6,a,b)",
+        "stats.beta.sf(.7,a,b)"
+      ]
+    ],
+    "contains": "Posterior P(p > .7)"
+  },
+  "build-a-metropolis-chain": {
+    "replace": [
+      [
+        "proposal = x+rng.normal(0,.12)",
+        "proposal = x+rng.normal(0,.8)"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "proposal = x+rng.normal(0,.12)",
+          "proposal = x+rng.normal(0,.005)"
+        ]
+      ]
+    ]
+  },
+  "correct-an-asymmetric-proposal": {
+    "replace": [
+      [
+        "stats.beta.logpdf(p,3,3)",
+        "stats.beta.logpdf(p,10,10)"
+      ],
+      [
+        "proposal = rng.beta(3,3)",
+        "proposal = rng.beta(10,10)"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "stats.beta.logpdf(p,3,3)",
+          "stats.beta.logpdf(p,10,10)"
+        ],
+        [
+          "proposal = rng.beta(3,3)",
+          "proposal = rng.beta(10,10)"
+        ],
+        [
+          "default_rng(2071)",
+          "default_rng(72)"
+        ]
+      ]
+    ]
+  },
+  "update-one-conditional-at-a-time": {
+    "replace": [
+      [
+        "rho = .85",
+        "rho = .98"
+      ]
+    ]
+  },
+  "account-for-serial-dependence": {
+    "replace": [
+      [
+        "rho, n = .9, 16000",
+        "rho, n = .95, 16000"
+      ]
+    ],
+    "variants": [
+      [
+        [
+          "rho, n = .9, 16000",
+          "rho, n = .3, 16000"
+        ]
+      ],
+      [
+        [
+          "rho, n = .9, 16000",
+          "rho, n = .95, 16000"
+        ],
+        [
+          "default_rng(2073)",
+          "default_rng(74)"
+        ]
+      ]
+    ]
+  },
+  "compare-multiple-chains": {
+    "replace": [
+      [
+        "good*np.array([1,1,1,2])[:,None]",
+        "good+np.array([0,0,0,1])[:,None]"
+      ],
+      [
+        "\"Scale disagreement\",scale_mismatch",
+        "\"Location disagreement\",scale_mismatch"
+      ]
+    ]
+  },
+  "predict-new-observations": {
+    "replace": [
+      [
+        "a, b, future_n, draws = 20, 14, 20, 20000",
+        "a, b, future_n, draws = 20, 14, 100, 20000"
+      ]
+    ]
+  },
+  "sizing-and-total-cost": {
+    "replace": [
+      [
+        "cost = units*capital+units*kw*24*365*years*electricity",
+        "cost = units*capital+units*kw*24*365*years*electricity + units*years*300"
+      ]
+    ]
+  },
+  "migration-deadline-and-budget": {
+    "replace": [
+      [
+        "for label, factor, fixed",
+        "cutover_failed = rng.random(worlds) < 0.10\nfor label, factor, fixed"
+      ],
+      [
+        "cost = fixed+1800*days",
+        "cost = fixed+1800*days + 20000*cutover_failed"
+      ]
+    ]
+  },
+  "gpu-job-and-checkpoint-economics": {
+    "replace": [
+      [
+        "checkpoint_hours, rate = .05, 3.0",
+        "checkpoint_hours, rate = .25, 3.0"
+      ]
+    ]
+  }
+}

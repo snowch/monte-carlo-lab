@@ -10,12 +10,11 @@ function get(key,fallback=''){
  try{return localStorage.getItem(prefix+key)??fallback}catch{storageAvailable=false;return fallback}
 }
 function put(key,value){
- try{localStorage.setItem(prefix+key,String(value));return true}catch{
-  storageAvailable=false;
-  const target=$('storage-error')||$('status')||$('save-note')||$('progress-status');
-  if(target){target.hidden=false;target.textContent='Browser storage is unavailable or full. Download your code or export a run/report before leaving.';}
-  return false;
- }
+ try{localStorage.setItem(prefix+key,String(value));return true}catch{return false}
+}
+function storageMessage(message){
+ const target=$('storage-error');
+ target.textContent=message;target.hidden=!message;
 }
 function download(name,body,type='application/json'){
  const url=URL.createObjectURL(new Blob([body],{type}));
@@ -55,19 +54,16 @@ function initializeOverview({lessons,applications,introduction}){
   const read=lessons.filter(l=>get('read:'+l.slug)==='true').length;
   $('progress-count').textContent=`${read} / ${lessons.length} read`;
   $('course-progress').value=read;
-  if(read){
-   $('progress-title').textContent=read===lessons.length?'A course read. More questions ahead.':'Your investigation continues.';
-   $('progress-text').textContent='Reading marks record progress, not mastery. Your drafts stay on this browser.';
-   const next=lessons.find(l=>get('read:'+l.slug)!=='true');
-   if(next){$('start-course').href='lessons/'+next.slug+'.html';$('start-label').textContent='Continue learning'}
-  }
+  const next=lessons.find(l=>get('read:'+l.slug)!=='true');
+  $('start-course').href=next?'lessons/'+next.slug+'.html':'#course';
+  $('start-label').textContent=next?(read?'Continue learning':'Start lesson 1'):'Review course contents';
   updateReadMarks();
  }
  progress();
- if(!storageAvailable)$('progress-status').textContent='Browser storage is unavailable. Use exports to keep your work.';
+ if(!storageAvailable)$('progress-status').textContent='This browser could not open saved progress.';
  const modules=[...document.querySelectorAll('.module')];
  const savedOpen=new Map();let searching=false;
- const revealModule=()=>{const id=decodeURIComponent(location.hash.slice(1));const module=document.getElementById(id);if(module?.classList.contains('module'))module.open=true};
+ const revealModule=()=>{const module=document.getElementById(location.hash.slice(1));if(module?.classList.contains('module'))module.open=true};
  revealModule();window.addEventListener('hashchange',revealModule);
  $('search').addEventListener('input',()=>{
   const words=$('search').value.toLowerCase().trim().split(/\s+/).filter(Boolean);
@@ -85,7 +81,15 @@ function initializeOverview({lessons,applications,introduction}){
  });
  $('export-progress').addEventListener('click',()=>{
   const data={};
-  try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key.startsWith(prefix))data[key.slice(prefix.length)]=localStorage.getItem(key)}}catch{}
+  try{
+   for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key?.startsWith(prefix))data[key.slice(prefix.length)]=localStorage.getItem(key);
+   }
+  }catch{
+   $('progress-status').textContent='This browser could not read saved progress. No file was downloaded.';
+   return;
+  }
   download('monte-carlo-lab-progress.json',JSON.stringify({course:'monte-carlo-lab',schema:1,exported_at:new Date().toISOString(),data},null,2));
   $('progress-status').textContent='Exported saved reading marks, attempts and drafts. Run results and CSV inputs require their own exports.';
  });
@@ -103,7 +107,7 @@ function initializeOverview({lessons,applications,introduction}){
     if(extra.length||!slugs.has(slug)||typeof value!=='string'||value.length>300_000||!((type==='read'&&!field&&(value==='true'||value==='false'))||(type==='draft'&&fields.has(field))))throw new Error('Progress file contains an invalid record. Nothing has been imported.');
    }
    let saved=0;for(const[key,value]of entries)if(put(key,value))saved++;
-   progress();$('progress-status').textContent=saved===entries.length?`Imported ${saved} saved records. Matching records in this browser were replaced.`:'Some records could not be saved. Export your work and check browser storage.';
+   progress();$('progress-status').textContent=saved===entries.length?`Imported ${saved} saved records. Matching records in this browser were replaced.`:`Saved ${saved} of ${entries.length} records. Keep the import file and check browser storage before retrying.`;
   }catch(error){$('progress-status').textContent=error.message}
   $('import-progress').value='';
  });
@@ -122,14 +126,38 @@ function initializeLesson(lesson){
  let recoverableDraft=get(draftKey('restore-backup'),null);
  $('saved-draft-note').hidden=$('code').value===initialCode;
  const refreshEditor=attachEditor($('code'));
+ const unsavedReportFields=new Set();
+ function updatePreparation(){
+  document.querySelector('.prepared-state').hidden=$('code').value!==initialCode||csv!==null;
+ }
+ updatePreparation();
+ function saveField(el){
+  const saved=put(draftKey(el.dataset.save),el.value);
+  if(el.id==='notes'){
+   $('save-note').textContent=saved?'Notes saved in this browser.':'The browser could not save these edits. Copy the open notes before leaving. Reloading may show older notes.';
+  }else if(el.id.startsWith('report-')){
+   if(saved)unsavedReportFields.delete(el.id);
+   else unsavedReportFields.add(el.id);
+   $('report-draft-status').textContent=unsavedReportFields.size
+    ?'The browser could not save some report edits. Export the investigation to keep the text currently open.'
+    :'Report fields saved in this browser.';
+  }else{
+   $('prediction-status').textContent=saved?'':'This browser could not save your prediction. Copy it before leaving to keep the current text.';
+  }
+ }
  document.querySelectorAll('[data-save]').forEach(el=>{
   el.value=get(draftKey(el.dataset.save));
   if(el.value&&el.closest('details')&&el.id!=='code')el.closest('details').open=true;
-  el.addEventListener('input',()=>put(draftKey(el.dataset.save),el.value));
+  el.addEventListener('input',()=>saveField(el));
  });
- if(!storageAvailable){$('storage-error').hidden=false;$('storage-error').textContent='Browser storage is unavailable. Download your code or export a run/report before leaving.';}
  $('mark-read').checked=get('read:'+slug)==='true';
- $('mark-read').addEventListener('change',()=>{put('read:'+slug,$('mark-read').checked);updateReadMarks()});
+ if(!storageAvailable)storageMessage('This browser could not open your saved work. Python can still run. To keep edits, copy them or export a record before leaving.');
+ $('mark-read').addEventListener('change',()=>{
+  const saved=put('read:'+slug,$('mark-read').checked);
+  if(!saved)$('mark-read').checked=get('read:'+slug)==='true';
+  $('read-status').textContent=saved?'':'This browser could not save the reading mark.';
+  updateReadMarks();
+ });
  function stale(){
   if(!lastSuccessfulRun)return;
   const changed=$('code').value!==lastSuccessfulRun.source || csv!==lastSuccessfulRun.input_csv || csvName!==lastSuccessfulRun.input_name;
@@ -153,16 +181,22 @@ function initializeLesson(lesson){
   }
   $('code').value=code;
   refreshEditor();
-  if(canSave)put(draftKey('code'),code);
+  const saved=canSave&&put(draftKey('code'),code);
+  storageMessage(saved?'':'This browser could not save the open code. Use Tools → Download Python to keep a copy.');
   $('saved-draft-note').hidden=true;
+  updatePreparation();
   updateRecovery();
   stale();
   $('editor-tools').open=false;
   $('code').focus();
+  return saved;
  }
  updateRecovery();
  $('code').addEventListener('input',()=>{
-  put(draftKey('code'),$('code').value);
+  const saved=put(draftKey('code'),$('code').value);
+  storageMessage(saved?'':'This browser could not save the open code. Use Tools → Download Python to keep a copy.');
+  $('saved-draft-note').hidden=true;
+  updatePreparation();
   updateRecovery();
   stale();
  });
@@ -170,10 +204,11 @@ function initializeLesson(lesson){
   if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();if(!busy)run()}
  });
  $('restore').addEventListener('click',()=>{
-  showCode(initialCode);
+  const saved=showCode(initialCode);
   $('status').textContent=recoverableDraft===null
    ?'Published code is ready. Select Run Python.'
-   :'Published code is ready. To get your draft back, use Recover draft in Tools.';
+   :saved?'Published code is ready. To get your draft back, use Recover draft in Tools.'
+    :'Published code is ready. To get your draft back in this tab, use Recover draft in Tools before reloading.';
  });
  $('recover-draft').addEventListener('click',()=>{
   if(recoverableDraft===null)return;
@@ -181,6 +216,11 @@ function initializeLesson(lesson){
   $('status').textContent='Draft recovered. Select Run Python to run this code.';
  });
  $('download-code').addEventListener('click',()=>download(slug+'.py',$('code').value,'text/x-python'));
+ $('back-to-editor').addEventListener('click',event=>{
+  event.preventDefault();
+  $('code').focus({preventScroll:true});
+  $('code-editor').scrollIntoView({block:'start'});
+ });
  $('export-run').addEventListener('click',()=>{
   if(!lastSuccessfulRun)return;
   const notes={prediction:$('prediction').value,notes:$('notes').value};
@@ -245,7 +285,7 @@ function initializeLesson(lesson){
    if(error){
     $('status').textContent=inputName===null
      ?'Python reported an error. Check the message, then edit the code and run again.'
-     :'Python reported an error. Check the message, then fix the CSV or code and run again. Use Choose CSV to select a different file.';
+     :'Python reported an error. Check the message, then fix the CSV or code and run again. Open Use your own CSV to select a different file.';
     showRunError(error,inputName,stdout);
     return;
    }
@@ -261,7 +301,7 @@ function initializeLesson(lesson){
     picture.append(image);const caption=document.createElement('figcaption'),link=document.createElement('a');
     link.href=image.src;link.target='_blank';link.rel='noopener';link.textContent='Open full-size figure ↗';caption.append(link);figure.append(picture,caption);return figure;
    }));
-   $('status').textContent='Completed. Inspect the output, then change one thing.';
+   $('status').textContent='Completed. Your result is below.';
    $('export-run').disabled=false;$('export-run').hidden=false;stale();
   };
   worker.postMessage({source,csv:input});
@@ -277,15 +317,18 @@ function initializeLesson(lesson){
   event.preventDefault();const selected=document.querySelector('input[name=answer]:checked');
   if(!selected){$('quiz-feedback').textContent='Choose an answer first, then check your reasoning.';return}
   const answer=Number(selected.value),correct=answer===lesson.correct;
-  put(draftKey('quiz'),JSON.stringify({answer,correct,at:new Date().toISOString()}));
+  const saved=put(draftKey('quiz'),JSON.stringify({answer,correct,at:new Date().toISOString()}));
   const feedback=$('quiz-feedback');feedback.replaceChildren();feedback.classList.toggle('incorrect',!correct);
   const title=document.createElement('b');title.textContent=correct?'That reasoning fits.':'Reconsider the comparison.';
   const text=document.createElement('span');text.innerHTML=rich(lesson.feedback);
-  feedback.append(title,text);feedback.focus({preventScroll:true});
+  feedback.append(title,text);
+  if(!saved)feedback.append(document.createTextNode(' This browser could not save your answer.'));
+  feedback.focus({preventScroll:true});
  });
  if($('csv-upload')){
   function showInput(){
    $('input-kind').textContent=csvName===null?'Next run uses invented starter data':`CSV for next run · ${csvName}`;
+   updatePreparation();
   }
   $('csv-upload').addEventListener('change',async()=>{
    const picker=$('csv-upload');
