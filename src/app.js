@@ -1,3 +1,4 @@
+import {registerReading,completeReadingSetup,experimentFilesUnavailable} from './experiment-state.mjs';
 import katex from './vendor/katex.mjs';
 import {renderRich} from './rich-text.mjs';
 // Copyright © 2026 Christopher Snow
@@ -80,6 +81,7 @@ if(course){
  if($('search'))initializeOverview(course);
  const lesson=[course.introduction,...course.lessons,...course.applications].find(l=>l.slug===document.querySelector('[data-slug]')?.dataset.slug);
  if(lesson)initializeLesson(lesson);
+ await completeReadingSetup();
  document.documentElement.dataset.ready='true';
 }
 function initializeOverview({lessons,applications,introduction}){
@@ -271,6 +273,20 @@ function initializeLesson(lesson){
   if(returnFocus)$('run').focus({preventScroll:true});
  }
  let pythonPrepared=false, preparationTimer;
+ function renderSuccessfulRun(){if(!lastSuccessfulRun)return;const {stdout,figures_svg_base64:figures,figures_narrow_svg_base64:figures_narrow=[]}=lastSuccessfulRun;
+   $('run-result').hidden=false;
+   $('output').textContent=stdout||'No text was printed.';
+   clearPlots();
+   $('plots').replaceChildren(...figures.map((svg,i)=>{
+    const figure=document.createElement('figure');figure.className='worked-figure';
+    const picture=document.createElement('picture');
+    const image=document.createElement('img');image.className='plot';image.src=svgUrl(svg);image.alt=`Plot ${i+1} from your actual Python execution. Read its labelled axes and the text output together.`;
+    if(figures_narrow[i]){const source=document.createElement('source');source.media='(max-width:700px)';source.srcset=svgUrl(figures_narrow[i]);picture.append(source)}
+    picture.append(image);const caption=document.createElement('figcaption'),link=document.createElement('a');
+    link.href=image.src;link.target='_blank';link.rel='noopener';link.textContent='Open full-size figure ↗';caption.append(link);figure.append(picture,caption);return figure;
+   }));
+
+ }
  function disposePython(){
   clearTimeout(preparationTimer);
   worker?.terminate();
@@ -331,9 +347,10 @@ function initializeLesson(lesson){
   if(runWasFocused)$('stop').focus({preventScroll:true});
   $('status').textContent=pythonPrepared?'Starting your Python…':'Loading Python and statistics packages. This can take a moment…';
   stale();
-  const fail=message=>{
+  const fail=(message,category='asset')=>{
    if(runRevision!==revision)return;
    terminate('Python could not finish. Check the message, then edit or run again.');
+   if(category==='asset'){experimentFilesUnavailable('Run Python');return;}
    showRunError(message,inputName);
   };
   timer=setTimeout(()=>fail('Python initialization exceeded two minutes. Check your connection and run again.'),120000);
@@ -344,9 +361,9 @@ function initializeLesson(lesson){
    if(data.type==='running'){
     pythonPrepared=true;
     clearTimeout(timer);$('status').textContent='Running your Python…';
-    timer=setTimeout(()=>fail('Execution exceeded 45 seconds and was stopped. Reduce the work or fix a loop, then run again.'),45000);return;
+    timer=setTimeout(()=>fail('Execution exceeded 45 seconds and was stopped. Reduce the work or fix a loop, then run again.','execution'),45000);return;
    }
-   if(data.type==='error'){fail(data.message);return}
+   if(data.type==='error'){fail(data.message,data.category||'asset');return}
    if(data.type!=='result')return;
    clearTimeout(timer);controls(false);
    const {stdout,error,figures,figures_narrow=[],versions}=data.value;
@@ -357,18 +374,8 @@ function initializeLesson(lesson){
     showRunError(error,inputName,stdout);
     return;
    }
-   $('run-result').hidden=false;
    lastSuccessfulRun={schema:1,course:'monte-carlo-lab',lesson:slug,executed_at:new Date().toISOString(),source,input_csv:input,input_name:inputName,stdout,error:null,figures_svg_base64:figures,figures_narrow_svg_base64:figures_narrow,versions,environment:{user_agent:navigator.userAgent,timing_scope:'Local browser Pyodide; see executed source for boundaries.'}};
-   $('output').textContent=stdout||'No text was printed.';
-   clearPlots();
-   $('plots').replaceChildren(...figures.map((svg,i)=>{
-    const figure=document.createElement('figure');figure.className='worked-figure';
-    const picture=document.createElement('picture');
-    const image=document.createElement('img');image.className='plot';image.src=svgUrl(svg);image.alt=`Plot ${i+1} from your actual Python execution. Read its labelled axes and the text output together.`;
-    if(figures_narrow[i]){const source=document.createElement('source');source.media='(max-width:700px)';source.srcset=svgUrl(figures_narrow[i]);picture.append(source)}
-    picture.append(image);const caption=document.createElement('figcaption'),link=document.createElement('a');
-    link.href=image.src;link.target='_blank';link.rel='noopener';link.textContent='Open full-size figure ↗';caption.append(link);figure.append(picture,caption);return figure;
-   }));
+   renderSuccessfulRun();
    $('status').textContent='Completed. Your result is below.';
    $('export-run').disabled=false;$('export-run').hidden=false;stale();
   };
@@ -467,13 +474,23 @@ function initializeLesson(lesson){
   });
  }
  controls(false);
+ registerReading('python-lesson',{
+  isBusy:()=>busy||readingCsv,
+  save:()=>{cancelPreparation();disposePython();return {lastSuccessfulRun,csv,csvName,recoverableDraft,quizFeedback:$('quiz-feedback').innerHTML,quizIncorrect:$('quiz-feedback').classList.contains('incorrect'),runError:$('run-error').hidden?null:Object.fromEntries(['error-summary','error-input','error-trace','error-details'].filter(id=>$(id)).map(id=>[id,{text:id==='error-details'?null:$(id).textContent,hidden:$(id).hidden}]))};},
+  restore:saved=>{ csv=saved.csv;csvName=saved.csvName;if($('csv-status'))$('csv-status').textContent=csvName?'Restored input: '+csvName:''; recoverableDraft=saved.recoverableDraft;refreshEditor();updateRecovery();
+   if(saved.lastSuccessfulRun){lastSuccessfulRun=saved.lastSuccessfulRun;renderSuccessfulRun();$('export-run').disabled=false;$('export-run').hidden=false;$('status').textContent='Saved earlier result. Select Run Python to use the current code.';}
+   $('quiz-feedback').innerHTML=saved.quizFeedback||'';$('quiz-feedback').classList.toggle('incorrect',!!saved.quizIncorrect);
+   $('mark-read').checked=get('read:'+slug)==='true';updateReadMarks();controls(false);stale();
+   if(saved.runError){for(const [id,value]of Object.entries(saved.runError)){const node=$(id);if(node){if(value.text!==null)node.textContent=value.text;node.hidden=value.hidden;}}$('run-error').hidden=false;}
+  }
+ });
 }
 
 document.addEventListener('click',event=>{
  for(const details of document.querySelectorAll('.header-help[open],.editor-tools[open]'))if(!details.contains(event.target))details.open=false;
 });
 document.addEventListener('keydown',event=>{
- if(event.key!=='Escape')return;
+ if(event.key!=='Escape'||document.querySelector('dialog:modal'))return;
  const open=[...document.querySelectorAll('.header-help[open],.editor-tools[open]')];
  const target=open.find(d=>d.contains(document.activeElement))||open.at(-1);
  if(target){target.open=false;target.querySelector('summary').focus()}
